@@ -1,0 +1,20 @@
+import { z } from "zod";
+
+export const signupFormSchema = z.object({
+	username: z.string().min(2, {
+		message: "Username must be at least 2 characters.",
+	}),
+	password: z.string().min(6, {
+		message: "Password must be at least 2 characters.",
+	}),
+	role: z.enum(["Student", "Teacher", "Admin"]),
+});
+
+export const signinFormSchema = z.object({
+	username: z.string().min(2, {
+		message: "Username must be at least 2 characters.",
+	}),
+	password: z.string().min(6, {
+		message: "Password must be at least 2 characters.",
+	}),
+});
