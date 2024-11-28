@@ -1,10 +1,10 @@
-import { Router } from "express";
-import { userSigninSchema, userSignupSchema } from "./types/zod";
-import { client } from "./utils/lib";
+import express from "express";
+import { userSigninSchema, userSignupSchema } from "./types/zod.js";
+import { client } from "./utils/lib.js";
 import { compare, hash } from "bcrypt";
 import jwt from "jsonwebtoken";
 
-export const userRouter = Router();
+const userRouter = express.Router();
 
 userRouter.post("/signup", async (req, res) => {
 	try {
@@ -79,3 +79,5 @@ userRouter.post("/signin", async (req, res) => {
 		res.status(500).json({ msg: "Internal server error" });
 	}
 });
+
+export { userRouter };

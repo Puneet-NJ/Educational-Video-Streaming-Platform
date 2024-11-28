@@ -1,10 +1,10 @@
-import { Router } from "express";
-import auth from "./middleware/auth";
-import { createRoomSchema } from "./types/zod";
-import { client, roomService } from "./utils/lib";
+import express from "express";
+import auth from "./middleware/auth.js";
+import { createRoomSchema } from "./types/zod.js";
+import { client, roomService } from "./utils/lib.js";
 import { AccessToken } from "livekit-server-sdk";
 
-export const roomRouter = Router();
+const roomRouter = express.Router();
 
 roomRouter.post("/", auth(["Teacher", "Admin"]), async (req, res) => {
 	try {
@@ -72,3 +72,5 @@ roomRouter.post("/", auth(["Teacher", "Admin"]), async (req, res) => {
 		res.status(500).json({ msg: "Internal server error" });
 	}
 });
+
+export { roomRouter };

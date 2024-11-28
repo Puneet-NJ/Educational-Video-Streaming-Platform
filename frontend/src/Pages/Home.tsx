@@ -1,10 +1,14 @@
 import useToken from "@/Hooks/useToken";
 import HomeTeacher from "./HomeTeacher";
 import HomeStudent from "./HomeStudent";
+import { useRecoilValue } from "recoil";
+import { userAtom } from "@/lib/atom";
 
 const Home = () => {
 	const { decodeToken } = useToken();
-	console.log(decodeToken, "hi");
+	const userToken = useRecoilValue(userAtom);
+
+	console.log(userToken);
 
 	return (
 		<div>

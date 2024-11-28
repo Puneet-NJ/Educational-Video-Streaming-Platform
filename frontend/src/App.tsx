@@ -1,7 +1,7 @@
 import { BrowserRouter, Route, Routes } from "react-router-dom";
 import Signup from "./Pages/Signup";
 import Signin from "./Pages/Signin";
-import { Home } from "lucide-react";
+import Home from "./Pages/Home";
 
 function App() {
 	return (
