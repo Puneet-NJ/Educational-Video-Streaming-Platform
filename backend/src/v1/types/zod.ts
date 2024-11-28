@@ -10,3 +10,10 @@ export const userSigninSchema = zod.object({
 	username: zod.string(),
 	password: zod.string(),
 });
+
+export const createRoomSchema = zod.object({
+	roomName: zod.string(),
+	description: zod.string(),
+	maxParticipants: zod.number(),
+	canParticipantsPublish: zod.boolean(),
+});

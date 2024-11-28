@@ -1,6 +1,7 @@
 import { BrowserRouter, Route, Routes } from "react-router-dom";
 import Signup from "./Pages/Signup";
 import Signin from "./Pages/Signin";
+import { Home } from "lucide-react";
 
 function App() {
 	return (
@@ -9,6 +10,7 @@ function App() {
 				<Routes>
 					<Route path="/signup" element={<Signup />} />
 					<Route path="/signin" element={<Signin />} />
+					<Route path="/home" element={<Home />} />
 				</Routes>
 			</BrowserRouter>
 		</>

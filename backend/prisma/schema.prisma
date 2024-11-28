@@ -20,6 +20,8 @@ model User {
   role  Role
 
   rooms UserInRoom[]
+
+  user Room?
 }
 
 model Room {
@@ -28,7 +30,14 @@ model Room {
   description String
   createdAt DateTime @default(now())
 
+  maxParticipants Int
+
   users UserInRoom[]
+
+  teacherId String @unique
+  teacher User @relation(references: [id], fields: [teacherId])
+
+  roomPermission RoomPermissions?
 }
 
 model UserInRoom {
@@ -39,6 +48,14 @@ model UserInRoom {
   user User @relation(references: [id], fields: [userId])
 
   roomId String
+  room Room @relation(references: [id], fields: [roomId])
+}
+
+model RoomPermissions {
+  id String @id @default(uuid())
+  canPublish Boolean
+
+  roomId String @unique
   room Room @relation(references: [id], fields: [roomId])
 }
 

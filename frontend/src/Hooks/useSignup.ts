@@ -20,7 +20,7 @@ const useSignup = () => {
 			}),
 		onSuccess: () => {
 			queryClient.invalidateQueries({ queryKey: ["user"] });
-			navigate("/");
+			navigate("/home");
 		},
 	});
 
