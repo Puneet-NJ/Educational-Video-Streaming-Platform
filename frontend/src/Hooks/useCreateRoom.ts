@@ -32,7 +32,7 @@ const useCreateRoom = () => {
 
 			setRoom({ token: token, roomName: data.roomName });
 			queryClient.invalidateQueries({ queryKey: ["room"] });
-			navigate(`/room/${token}`);
+			navigate("/space");
 		},
 	});
 

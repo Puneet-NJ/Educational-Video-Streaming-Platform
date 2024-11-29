@@ -2,7 +2,7 @@ import { CreateRoomForm } from "@/Components/CreateRoomForm";
 
 const HomeTeacher = () => {
 	return (
-		<div className="w-full h-screen flex justify-center items-center">
+		<div className="w-full h-full flex justify-center items-center">
 			<CreateRoomForm />
 		</div>
 	);

@@ -1,10 +1,8 @@
-import { ModeToggle } from "@/Components/mode-toggle";
 import { SigninForm } from "../Components/SigninForm";
 
 const Signin = () => {
 	return (
-		<div className="h-screen w-screen flex justify-center items-center">
-			<ModeToggle />
+		<div className="h-full w-full flex justify-center items-center">
 			<SigninForm />
 		</div>
 	);

@@ -16,16 +16,16 @@ import {
 	SelectValue,
 } from "./ui/select";
 import { Input } from "./ui/input";
-import { LOGO } from "@/lib/lib";
 import useSignup from "@/Hooks/useSignup";
+import { Logo } from "./Logo";
 
 export const SignupForm = () => {
 	const { form, onSubmit } = useSignup();
 
 	return (
-		<div className="w-1/4 px-10 py-7 shadow-lg flex flex-col gap-5 rounded bg-gray-700 bg-opacity-25 border dark:border-gray-700">
+		<div className="w-1/4 px-10 py-7 shadow-2xl flex flex-col gap-5 rounded bg-gray-300 border dark:border-gray-700 dark:bg-inherit">
 			<div className="flex justify-center">
-				<img src={LOGO} />
+				<Logo />
 			</div>
 			<Form {...form}>
 				<form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">

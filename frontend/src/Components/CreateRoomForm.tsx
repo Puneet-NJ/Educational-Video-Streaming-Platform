@@ -16,7 +16,7 @@ export const CreateRoomForm = () => {
 	const { form, onSubmit } = useCreateRoom();
 
 	return (
-		<div className="w-1/3 border p-10">
+		<div className="w-1/3 border p-10 bg-gray-300 rounded shadow-2xl dark:bg-inherit">
 			<Form {...form}>
 				<form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
 					<FormField
@@ -28,9 +28,6 @@ export const CreateRoomForm = () => {
 								<FormControl>
 									<Input placeholder="HTML Class-73" {...field} />
 								</FormControl>
-								{/* <FormDescription>
-								This is your public display name.
-							</FormDescription> */}
 								<FormMessage />
 							</FormItem>
 						)}
@@ -45,9 +42,6 @@ export const CreateRoomForm = () => {
 								<FormControl>
 									<Input placeholder="..." {...field} />
 								</FormControl>
-								{/* <FormDescription>
-								This is your public display name.
-							</FormDescription> */}
 								<FormMessage />
 							</FormItem>
 						)}
