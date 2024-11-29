@@ -18,3 +18,14 @@ export const signinFormSchema = z.object({
 		message: "Password must be at least 2 characters.",
 	}),
 });
+
+export const createRoomSchema = z.object({
+	roomName: z.string().min(2, {
+		message: "Room name must be at least 2 characters.",
+	}),
+	description: z.string().min(2, {
+		message: "Room Description must be at least 2 characters.",
+	}),
+	maxParticipants: z.coerce.number().min(2),
+	canParticipantsPublish: z.boolean(),
+});

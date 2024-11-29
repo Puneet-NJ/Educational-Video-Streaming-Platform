@@ -21,15 +21,36 @@ roomRouter.post("/", auth(["Teacher", "Admin"]), async (req, res) => {
 		const teacherId = res.locals.id;
 		const username = res.locals.username;
 
+		const room = await client.room.findFirst({
+			where: {
+				name: roomName,
+			},
+		});
+		if (room) {
+			res.status(409).json({ msg: "Room name already exists" });
+			return;
+		}
+
+		const usersRoom = await client.userInRoom.findMany({
+			where: {
+				userId: teacherId,
+			},
+		});
+		usersRoom.map((room) => {
+			if (room.isUserActive) {
+				res.status(411).json({ msg: "You are already in a room" });
+				return;
+			}
+		});
+
 		// create a room
 		const opts = {
 			name: roomName,
-			emptyTimeout: 10 * 60,
+			emptyTimeout: 1 * 60,
 			maxParticipants,
 		};
-		roomService.createRoom(opts).then((room) => {
-			console.log("Room created successfully: ", room);
-		});
+		const createdRoom = await roomService.createRoom(opts);
+		console.log(createdRoom);
 
 		// create a token
 		const user = new AccessToken(
@@ -37,11 +58,10 @@ roomRouter.post("/", auth(["Teacher", "Admin"]), async (req, res) => {
 			process.env.LIVEKIT_API_SECRET,
 			{
 				identity: username,
-				ttl: "10m",
+				ttl: "1m",
 			}
 		);
 		user.addGrant({ roomAdmin: true, roomJoin: true, room: roomName });
-
 		const token = await user.toJwt();
 
 		// put the room details and room permissions info in the db
@@ -64,11 +84,21 @@ roomRouter.post("/", auth(["Teacher", "Admin"]), async (req, res) => {
 				});
 			});
 		} catch (err) {
+			await roomService
+				.deleteRoom(roomName)
+				.then(() => {
+					console.log("deleted the room");
+				})
+				.catch((err) => console.log(err));
+
 			res.status(500).json({ msg: "Error while updating db" });
+			return;
 		}
 
 		res.json({ msg: "Room created successfully", token });
 	} catch (err) {
+		console.log(err);
+
 		res.status(500).json({ msg: "Internal server error" });
 	}
 });

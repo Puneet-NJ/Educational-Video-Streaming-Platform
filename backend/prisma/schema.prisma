@@ -44,6 +44,8 @@ model UserInRoom {
   id String @id @default(uuid())
   joinedAt  DateTime @default(now())
 
+  isUserActive Boolean
+
   userId String
   user User @relation(references: [id], fields: [userId])
 

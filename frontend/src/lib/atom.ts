@@ -8,3 +8,11 @@ export const userAtom = atom({
 		role: "",
 	},
 });
+
+export const roomAtom = atom({
+	key: "roomAtom",
+	default: {
+		token: "",
+		roomName: "",
+	},
+});

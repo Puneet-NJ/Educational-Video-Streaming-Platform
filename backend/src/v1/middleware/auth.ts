@@ -27,17 +27,19 @@ const auth = (roles: Roles[]) => {
 				return;
 			}
 
-			roles.map((role) => {
-				if (role === decodedToken.role) {
-					res.locals.id = decodedToken.id;
-					res.locals.username = decodedToken.username;
-					next();
-				}
-			});
+			if (roles.includes(decodedToken.role)) {
+				res.locals.id = decodedToken.id;
+				res.locals.username = decodedToken.username;
+				res.locals.role = decodedToken.role;
+
+				return next();
+			}
 
 			res.status(401).json({ msg: "Unauthorized" });
+			return;
 		} catch (err) {
 			res.status(500).json({ msg: "Internal server error" });
+			return;
 		}
 	};
 };
