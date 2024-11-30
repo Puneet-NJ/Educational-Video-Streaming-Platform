@@ -1,23 +1,20 @@
+import { createTokenSchema } from "@/lib/Types";
 import { BACKEND_URL } from "@/lib/lib";
-import { joinRoomSchema } from "@/lib/Types";
-import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import axios from "axios";
-import { useForm } from "react-hook-form";
 import { z } from "zod";
 import useToken from "./useToken";
 import { useSetRecoilState } from "recoil";
-import { roomAtom } from "@/lib/atom";
-import { useNavigate } from "react-router-dom";
+import { roomAtom, roomToken } from "@/lib/atom";
 
-const useJoinRoom = () => {
-	const { getToken } = useToken();
+const useCreateToken = () => {
+	const setRoomToken = useSetRecoilState(roomToken);
 	const setRoom = useSetRecoilState(roomAtom);
+	const { getToken } = useToken();
 	const queryClient = useQueryClient();
-	const navigate = useNavigate();
 
 	const mutation = useMutation({
-		mutationFn: (values: z.infer<typeof joinRoomSchema>) =>
+		mutationFn: (values: z.infer<typeof createTokenSchema>) =>
 			axios({
 				method: "POST",
 				url: `${BACKEND_URL}/room/token`,
@@ -30,27 +27,19 @@ const useJoinRoom = () => {
 			})),
 
 		onSuccess: (data) => {
-			setRoom(data);
+			setRoom({ roomId: data.roomId, roomName: data.roomName });
+			setRoomToken(data.token);
 			queryClient.invalidateQueries({ queryKey: ["room"] });
-			navigate("/space");
 		},
 	});
 
-	const form = useForm<z.infer<typeof joinRoomSchema>>({
-		resolver: zodResolver(joinRoomSchema),
-		defaultValues: {
-			roomId: "",
-		},
-	});
-
-	function onSubmit(values: z.infer<typeof joinRoomSchema>) {
+	function createToken(values: z.infer<typeof createTokenSchema>) {
 		mutation.mutate(values);
 	}
 
 	return {
-		form,
-		onSubmit,
+		createToken,
 	};
 };
 
-export default useJoinRoom;
+export default useCreateToken;

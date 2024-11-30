@@ -24,18 +24,17 @@ const useCreateRoom = () => {
 				headers: { Authorization: `Bearer ${getToken()}` },
 				data: values,
 			}).then((response) => ({
-				token: response.data.token,
 				roomId: response.data.roomId,
 				roomName: values.roomName,
 			})),
 		onSuccess: (data) => {
 			setRoom({
-				token: data.token,
 				roomId: data.roomId,
 				roomName: data.roomName,
 			});
+
 			queryClient.invalidateQueries({ queryKey: ["room"] });
-			navigate("/space");
+			navigate(`/space/${data.roomId}`);
 		},
 	});
 

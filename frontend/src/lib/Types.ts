@@ -33,3 +33,7 @@ export const createRoomSchema = z.object({
 export const joinRoomSchema = z.object({
 	roomId: z.string(),
 });
+
+export const createTokenSchema = z.object({
+	roomId: z.string(),
+});

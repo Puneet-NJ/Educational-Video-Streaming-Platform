@@ -12,7 +12,6 @@ export const userAtom = atom({
 export const roomAtom = atom({
 	key: "roomAtom",
 	default: {
-		token: "",
 		roomName: "",
 		roomId: "",
 	},
@@ -20,5 +19,10 @@ export const roomAtom = atom({
 
 export const participantIdAtom = atom({
 	key: "participantIdAtom",
+	default: "",
+});
+
+export const roomToken = atom({
+	key: "roomToken",
 	default: "",
 });

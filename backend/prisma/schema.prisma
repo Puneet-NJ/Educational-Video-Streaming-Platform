@@ -21,7 +21,7 @@ model User {
 
   rooms UserInRoom[]
 
-  user Room?
+  user Room[]
 }
 
 model Room {
@@ -34,7 +34,7 @@ model Room {
 
   users UserInRoom[]
 
-  teacherId String @unique
+  teacherId String
   teacher User @relation(references: [id], fields: [teacherId])
 
   roomPermission RoomPermissions?

@@ -1,5 +1,6 @@
+import useCreateToken from "@/Hooks/useCreateToken";
 import useVideo from "@/Hooks/useVideo";
-import { roomAtom, userAtom } from "@/lib/atom";
+import { roomToken, userAtom } from "@/lib/atom";
 import {
 	ControlBar,
 	GridLayout,
@@ -12,26 +13,42 @@ import {
 import "@livekit/components-styles";
 
 import { Track } from "livekit-client";
+import { useEffect } from "react";
+import { useParams } from "react-router-dom";
 import { useRecoilValue } from "recoil";
 
 export const Video = () => {
-	const room = useRecoilValue(roomAtom);
 	const user = useRecoilValue(userAtom);
 	const serverUrl = import.meta.env.VITE_LIVEKIT_URL;
 	const { handleJoin, handleLeave } = useVideo();
+	const { createToken } = useCreateToken();
+	const room_token = useRecoilValue(roomToken);
 
-	console.log(room, serverUrl);
-	if (user.role === "Teacher") console.log(room.roomId);
+	const params = useParams();
+
+	useEffect(() => {
+		createToken({ roomId: params.roomId || "" });
+
+		window.addEventListener("beforeunload", handleLeave);
+
+		return () => {
+			console.log("comp unmounted");
+			window.removeEventListener("beforeunload", handleLeave);
+			handleLeave();
+		};
+	}, []);
 
 	return (
 		<LiveKitRoom
 			video={true}
 			audio={true}
-			token={room.token}
+			token={room_token}
 			serverUrl={serverUrl}
 			// Use the default LiveKit theme for nice styles.
 			data-lk-theme="default"
-			onConnected={handleJoin}
+			onConnected={() => {
+				handleJoin(params.roomId || "");
+			}}
 			onDisconnected={handleLeave}
 		>
 			{/* Your custom component with basic video conferencing functionality. */}
@@ -40,9 +57,11 @@ export const Video = () => {
 			<RoomAudioRenderer />
 			{/* Controls for the user to start/stop audio, video, and screen
       share tracks and to leave the room. */}
-			<ControlBar />
+			<div className="overflow-x-scroll ">
+				<ControlBar />
+			</div>
 
-			{user.role === "Teacher" ? room.roomId : null}
+			{user.role === "Teacher" ? params.token : null}
 		</LiveKitRoom>
 	);
 };
@@ -57,11 +76,13 @@ function MyVideoConference() {
 		],
 		{ onlySubscribed: false }
 	);
+
+	const teachersTrack = tracks.filter(
+		(track) => track.participant.permissions?.canPublish
+	);
+
 	return (
-		<GridLayout
-			tracks={tracks}
-			style={{ height: "calc(100vh - var(--lk-control-bar-height))" }}
-		>
+		<GridLayout tracks={teachersTrack}>
 			{/* The GridLayout accepts zero or one child. The child is used
       as a template to render all passed in tracks. */}
 			<ParticipantTile />

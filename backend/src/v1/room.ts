@@ -49,23 +49,6 @@ roomRouter.post("/", auth(["Teacher", "Admin"]), async (req, res) => {
 		const createdRoom = await roomService.createRoom(opts);
 		console.log(createdRoom);
 
-		// create a token
-		const user = new AccessToken(
-			process.env.LIVEKIT_API_KEY,
-			process.env.LIVEKIT_API_SECRET,
-			{
-				identity: username,
-				ttl: "1m",
-			}
-		);
-		user.addGrant({
-			roomAdmin: true,
-			roomJoin: true,
-			room: roomId,
-			canPublish: true,
-		});
-		const token = await user.toJwt();
-
 		// put the room details and room permissions info in the db
 		try {
 			await client.$transaction(async (txn) => {
@@ -87,8 +70,10 @@ roomRouter.post("/", auth(["Teacher", "Admin"]), async (req, res) => {
 				});
 			});
 		} catch (err) {
+			console.log(err);
+
 			await roomService
-				.deleteRoom(roomName)
+				.deleteRoom(roomId)
 				.then(() => {
 					console.log("deleted the room");
 				})
@@ -98,7 +83,7 @@ roomRouter.post("/", auth(["Teacher", "Admin"]), async (req, res) => {
 			return;
 		}
 
-		res.json({ msg: "Room created successfully", token, roomId });
+		res.json({ msg: "Room created successfully", roomId });
 	} catch (err) {
 		console.log(err);
 
@@ -120,12 +105,18 @@ roomRouter.post(
 			const roomId = validateInput.data.roomId;
 			const userId = res.locals.id;
 			const username = res.locals.username;
+			const role = res.locals.role;
 
 			// todo: check if user is already part of the room and return if so
 
 			const roomInfo = await client.room.findFirst({
 				where: { id: roomId },
-				select: { name: true, maxParticipants: true, roomPermission: true },
+				select: {
+					name: true,
+					maxParticipants: true,
+					teacherId: true,
+					roomPermission: true,
+				},
 			});
 			if (!roomInfo) {
 				res.status(400).json({ msg: "Room doesn't exist" });
@@ -138,7 +129,15 @@ roomRouter.post(
 				return;
 			}
 
-			const canPublish = roomInfo.roomPermission?.canPublish;
+			let canPublish: boolean;
+			let roomAdmin: boolean;
+
+			canPublish = roomInfo.roomPermission?.canPublish || false;
+			roomAdmin = false;
+			if (role === "Teacher" || userId === roomInfo.teacherId) {
+				canPublish = true;
+				roomAdmin = true;
+			}
 
 			// create a token
 			const participant = new AccessToken(
@@ -150,6 +149,7 @@ roomRouter.post(
 				}
 			);
 			participant.addGrant({
+				roomAdmin: roomAdmin,
 				canPublish: canPublish,
 				roomJoin: true,
 				room: roomId,
@@ -189,6 +189,12 @@ roomRouter.post(
 					isUserActive: true,
 				},
 			});
+			console.log("1", joinUser);
+
+			const getAll = await client.userInRoom.findFirst({
+				where: { id: joinUser.id },
+			});
+			console.log("2", getAll);
 
 			res.json({ msg: "User joined the room", id: joinUser.id });
 		} catch (err) {
@@ -218,6 +224,7 @@ roomRouter.post(
 					isUserActive: false,
 				},
 			});
+			console.log("3", leftUser);
 
 			res.json({ msg: "User left the room" });
 		} catch (err) {

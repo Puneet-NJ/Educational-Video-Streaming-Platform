@@ -3,27 +3,28 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import axios from "axios";
 import useToken from "./useToken";
 import { useRecoilValue, useSetRecoilState } from "recoil";
-import { participantIdAtom, roomAtom } from "@/lib/atom";
+import { participantIdAtom } from "@/lib/atom";
 
 const useVideo = () => {
 	const { getToken } = useToken();
-	const room = useRecoilValue(roomAtom);
 	const setParticipantId = useSetRecoilState(participantIdAtom);
 	const participantId = useRecoilValue(participantIdAtom);
 	const queryClient = useQueryClient();
 
 	const joinMutate = useMutation({
-		mutationFn: () =>
+		mutationFn: (roomId: string) =>
 			axios({
 				method: "POST",
 				url: `${BACKEND_URL}/room/join`,
 				headers: { Authorization: `Bearer ${getToken()}` },
 				data: {
-					roomId: room.roomId,
+					roomId: roomId,
 				},
 			}).then((res) => res.data),
 
 		onSuccess: (data) => {
+			console.log(data);
+
 			setParticipantId(data.id);
 			queryClient.invalidateQueries({ queryKey: ["participantId"] });
 		},
@@ -47,8 +48,11 @@ const useVideo = () => {
 		},
 	});
 
-	const handleJoin = () => {
-		joinMutate.mutate();
+	const handleJoin = (roomId: string) => {
+		console.log("handle join", roomId);
+
+		if (roomId === "") return;
+		joinMutate.mutate(roomId);
 	};
 
 	const handleLeave = () => {
