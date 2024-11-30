@@ -1,8 +1,13 @@
 import express from "express";
 import auth from "./middleware/auth.js";
-import { createRoomSchema } from "./types/zod.js";
+import {
+	createRoomSchema,
+	joinRoomSchema,
+	leaveRoomSchema,
+} from "./types/zod.js";
 import { client, roomService } from "./utils/lib.js";
-import { AccessToken } from "livekit-server-sdk";
+import { AccessToken, Room } from "livekit-server-sdk";
+import { v4 as uuidv4 } from "uuid";
 
 const roomRouter = express.Router();
 
@@ -21,31 +26,23 @@ roomRouter.post("/", auth(["Teacher", "Admin"]), async (req, res) => {
 		const teacherId = res.locals.id;
 		const username = res.locals.username;
 
-		const room = await client.room.findFirst({
-			where: {
-				name: roomName,
-			},
-		});
-		if (room) {
-			res.status(409).json({ msg: "Room name already exists" });
-			return;
-		}
+		// const usersRoom = await client.userInRoom.findMany({
+		// 	where: {
+		// 		userId: teacherId,
+		// 	},
+		// });
+		// usersRoom.map((room) => {
+		// 	if (room.isUserActive) {
+		// 		res.status(411).json({ msg: "You are already in a room" });
+		// 		return;
+		// 	}
+		// });
 
-		const usersRoom = await client.userInRoom.findMany({
-			where: {
-				userId: teacherId,
-			},
-		});
-		usersRoom.map((room) => {
-			if (room.isUserActive) {
-				res.status(411).json({ msg: "You are already in a room" });
-				return;
-			}
-		});
+		const roomId = uuidv4();
 
 		// create a room
 		const opts = {
-			name: roomName,
+			name: roomId,
 			emptyTimeout: 1 * 60,
 			maxParticipants,
 		};
@@ -61,14 +58,20 @@ roomRouter.post("/", auth(["Teacher", "Admin"]), async (req, res) => {
 				ttl: "1m",
 			}
 		);
-		user.addGrant({ roomAdmin: true, roomJoin: true, room: roomName });
+		user.addGrant({
+			roomAdmin: true,
+			roomJoin: true,
+			room: roomId,
+			canPublish: true,
+		});
 		const token = await user.toJwt();
 
 		// put the room details and room permissions info in the db
 		try {
 			await client.$transaction(async (txn) => {
-				const room = await client.room.create({
+				const room = await txn.room.create({
 					data: {
+						id: roomId,
 						name: roomName,
 						description,
 						maxParticipants,
@@ -76,10 +79,10 @@ roomRouter.post("/", auth(["Teacher", "Admin"]), async (req, res) => {
 					},
 				});
 
-				await client.roomPermissions.create({
+				await txn.roomPermissions.create({
 					data: {
 						canPublish: canParticipantsPublish,
-						roomId: room.id,
+						roomId: roomId,
 					},
 				});
 			});
@@ -95,12 +98,132 @@ roomRouter.post("/", auth(["Teacher", "Admin"]), async (req, res) => {
 			return;
 		}
 
-		res.json({ msg: "Room created successfully", token });
+		res.json({ msg: "Room created successfully", token, roomId });
 	} catch (err) {
 		console.log(err);
 
 		res.status(500).json({ msg: "Internal server error" });
 	}
 });
+
+roomRouter.post(
+	"/token",
+	auth(["Teacher", "Admin", "Student"]),
+	async (req, res) => {
+		try {
+			const validateInput = joinRoomSchema.safeParse(req.body);
+			if (!validateInput.success) {
+				res.status(411).json({ msg: "Invalid inputs" });
+				return;
+			}
+
+			const roomId = validateInput.data.roomId;
+			const userId = res.locals.id;
+			const username = res.locals.username;
+
+			// todo: check if user is already part of the room and return if so
+
+			const roomInfo = await client.room.findFirst({
+				where: { id: roomId },
+				select: { name: true, maxParticipants: true, roomPermission: true },
+			});
+			if (!roomInfo) {
+				res.status(400).json({ msg: "Room doesn't exist" });
+				return;
+			}
+
+			const currParticipantsInRoom = await roomService.listParticipants(roomId);
+			if (currParticipantsInRoom.length >= roomInfo.maxParticipants) {
+				res.status(400).json({ msg: "The room is full" });
+				return;
+			}
+
+			const canPublish = roomInfo.roomPermission?.canPublish;
+
+			// create a token
+			const participant = new AccessToken(
+				process.env.LIVEKIT_API_KEY,
+				process.env.LIVEKIT_API_SECRET,
+				{
+					identity: username,
+					ttl: "1m",
+				}
+			);
+			participant.addGrant({
+				canPublish: canPublish,
+				roomJoin: true,
+				room: roomId,
+			});
+
+			const token = await participant.toJwt();
+
+			res.json({
+				msg: "Token generated successfully",
+				token,
+				roomName: roomInfo.name,
+			});
+		} catch (err) {
+			res.status(500).json({ msg: "Internal server error" });
+		}
+	}
+);
+
+roomRouter.post(
+	"/join",
+	auth(["Teacher", "Admin", "Student"]),
+	async (req, res) => {
+		try {
+			const validateInput = joinRoomSchema.safeParse(req.body);
+			if (!validateInput.success) {
+				res.status(411).json({ msg: "Invalid inputs" });
+				return;
+			}
+
+			const userId = res.locals.id;
+			const roomId = validateInput.data.roomId;
+
+			const joinUser = await client.userInRoom.create({
+				data: {
+					userId,
+					roomId,
+					isUserActive: true,
+				},
+			});
+
+			res.json({ msg: "User joined the room", id: joinUser.id });
+		} catch (err) {
+			res.status(500).json({ msg: "Internal server error" });
+		}
+	}
+);
+
+roomRouter.post(
+	"/leave",
+	auth(["Teacher", "Admin", "Student"]),
+	async (req, res) => {
+		try {
+			const validateInput = leaveRoomSchema.safeParse(req.body);
+			if (!validateInput.success) {
+				res.status(411).json({ msg: "Invalid inputs" });
+				return;
+			}
+
+			const participationId = validateInput.data.participationId;
+
+			const leftUser = await client.userInRoom.update({
+				where: {
+					id: participationId,
+				},
+				data: {
+					isUserActive: false,
+				},
+			});
+
+			res.json({ msg: "User left the room" });
+		} catch (err) {
+			res.status(500).json({ msg: "Internal server error" });
+		}
+	}
+);
 
 export { roomRouter };

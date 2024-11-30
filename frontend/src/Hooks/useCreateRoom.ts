@@ -25,12 +25,15 @@ const useCreateRoom = () => {
 				data: values,
 			}).then((response) => ({
 				token: response.data.token,
+				roomId: response.data.roomId,
 				roomName: values.roomName,
 			})),
 		onSuccess: (data) => {
-			const token = data.token;
-
-			setRoom({ token: token, roomName: data.roomName });
+			setRoom({
+				token: data.token,
+				roomId: data.roomId,
+				roomName: data.roomName,
+			});
 			queryClient.invalidateQueries({ queryKey: ["room"] });
 			navigate("/space");
 		},

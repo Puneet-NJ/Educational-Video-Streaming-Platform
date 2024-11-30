@@ -29,3 +29,7 @@ export const createRoomSchema = z.object({
 	maxParticipants: z.coerce.number().min(2),
 	canParticipantsPublish: z.boolean(),
 });
+
+export const joinRoomSchema = z.object({
+	roomId: z.string(),
+});

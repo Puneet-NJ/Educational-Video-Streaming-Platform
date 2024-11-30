@@ -17,3 +17,11 @@ export const createRoomSchema = zod.object({
 	maxParticipants: zod.number(),
 	canParticipantsPublish: zod.boolean(),
 });
+
+export const joinRoomSchema = zod.object({
+	roomId: zod.string(),
+});
+
+export const leaveRoomSchema = zod.object({
+	participationId: zod.string(),
+});

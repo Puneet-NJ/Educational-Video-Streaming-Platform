@@ -1,4 +1,5 @@
-import { roomAtom } from "@/lib/atom";
+import useVideo from "@/Hooks/useVideo";
+import { roomAtom, userAtom } from "@/lib/atom";
 import {
 	ControlBar,
 	GridLayout,
@@ -15,9 +16,12 @@ import { useRecoilValue } from "recoil";
 
 export const Video = () => {
 	const room = useRecoilValue(roomAtom);
+	const user = useRecoilValue(userAtom);
 	const serverUrl = import.meta.env.VITE_LIVEKIT_URL;
+	const { handleJoin, handleLeave } = useVideo();
 
 	console.log(room, serverUrl);
+	if (user.role === "Teacher") console.log(room.roomId);
 
 	return (
 		<LiveKitRoom
@@ -27,6 +31,8 @@ export const Video = () => {
 			serverUrl={serverUrl}
 			// Use the default LiveKit theme for nice styles.
 			data-lk-theme="default"
+			onConnected={handleJoin}
+			onDisconnected={handleLeave}
 		>
 			{/* Your custom component with basic video conferencing functionality. */}
 			<MyVideoConference />
@@ -35,6 +41,8 @@ export const Video = () => {
 			{/* Controls for the user to start/stop audio, video, and screen
       share tracks and to leave the room. */}
 			<ControlBar />
+
+			{user.role === "Teacher" ? room.roomId : null}
 		</LiveKitRoom>
 	);
 };
