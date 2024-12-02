@@ -15,7 +15,6 @@ export const createRoomSchema = zod.object({
 	roomName: zod.string(),
 	description: zod.string(),
 	maxParticipants: zod.number(),
-	canParticipantsPublish: zod.boolean(),
 });
 
 export const joinRoomSchema = zod.object({

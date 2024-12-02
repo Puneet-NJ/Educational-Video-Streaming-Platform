@@ -12,7 +12,7 @@ import {
 
 import "@livekit/components-styles";
 
-import { Track } from "livekit-client";
+import { Track, LocalParticipant } from "livekit-client";
 import { useEffect } from "react";
 import { useParams } from "react-router-dom";
 import { useRecoilValue } from "recoil";
@@ -31,6 +31,14 @@ export const Video = () => {
 
 		window.addEventListener("beforeunload", handleLeave);
 
+		//
+
+		// const room = new Room()
+
+		// const a:LocalParticipant = room.localParticipant
+		// a.setCameraEnabled
+
+		//
 		return () => {
 			console.log("comp unmounted");
 			window.removeEventListener("beforeunload", handleLeave);

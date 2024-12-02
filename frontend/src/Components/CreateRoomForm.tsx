@@ -10,7 +10,6 @@ import {
 	FormMessage,
 } from "./ui/form";
 import { Input } from "./ui/input";
-import { Switch } from "./ui/switch";
 
 export const CreateRoomForm = () => {
 	const { form, onSubmit } = useCreateRoom();
@@ -65,27 +64,6 @@ export const CreateRoomForm = () => {
 									Maximum Participants in the room including you
 								</FormDescription>
 								<FormMessage />
-							</FormItem>
-						)}
-					/>
-
-					<FormField
-						control={form.control}
-						name="canParticipantsPublish"
-						render={({ field }) => (
-							<FormItem className="flex flex-row items-center justify-between rounded-lg border p-3 shadow-sm">
-								<div className="space-y-0.5">
-									<FormLabel>Participant publishment</FormLabel>
-									<FormDescription>
-										Can the participants of the room publish
-									</FormDescription>
-								</div>
-								<FormControl>
-									<Switch
-										checked={field.value}
-										onCheckedChange={field.onChange}
-									/>
-								</FormControl>
 							</FormItem>
 						)}
 					/>

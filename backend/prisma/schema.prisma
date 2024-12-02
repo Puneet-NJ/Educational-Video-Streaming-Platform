@@ -14,52 +14,43 @@ datasource db {
 }
 
 model User {
-  id String @id @default(uuid())
-  username String @unique
-  password String
-  role  Role
+  id                String    @id   @default(uuid())
+  username          String    @unique
+  password          String
+  isPartOfRoom      Boolean
+  role              Role
 
-  rooms UserInRoom[]
+  room              Room[]
 
-  user Room[]
+  userInRoom        UserInRoom[]
 }
 
 model Room {
-  id String @id @default(uuid())
-  name String
-  description String
-  createdAt DateTime @default(now())
+  id                String    @id   @default(uuid())
+  name              String
+  description       String
+  createdAt         DateTime  @default(now())
+  maxParticipants   Int
 
-  maxParticipants Int
+  teacherId         String
+  teacher           User      @relation(fields: [teacherId], references: [id])
 
-  users UserInRoom[]
+  userInRoom        UserInRoom[]
 
-  teacherId String
-  teacher User @relation(references: [id], fields: [teacherId])
-
-  roomPermission RoomPermissions?
 }
 
 model UserInRoom {
-  id String @id @default(uuid())
-  joinedAt  DateTime @default(now())
+  id                String    @id   @default(uuid())
+  joindedAt         DateTime  @default(now())
+  leftAt            DateTime?  @default(now())
 
-  isUserActive Boolean
+  userId            String
+  user              User      @relation(fields: [userId], references: [id])
 
-  userId String
-  user User @relation(references: [id], fields: [userId])
-
-  roomId String
-  room Room @relation(references: [id], fields: [roomId])
+  roomId            String
+  room              Room      @relation(fields: [roomId], references: [id])
 }
 
-model RoomPermissions {
-  id String @id @default(uuid())
-  canPublish Boolean
-
-  roomId String @unique
-  room Room @relation(references: [id], fields: [roomId])
-}
 
 enum Role {
   Student

@@ -43,7 +43,6 @@ const useCreateRoom = () => {
 		defaultValues: {
 			roomName: "",
 			description: "",
-			canParticipantsPublish: false,
 			maxParticipants: 2,
 		},
 	});

@@ -1,5 +1,4 @@
 import { PrismaClient } from "@prisma/client";
-import { Room } from "livekit-client";
 import { RoomServiceClient } from "livekit-server-sdk";
 
 export const client = new PrismaClient();

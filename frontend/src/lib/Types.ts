@@ -27,7 +27,6 @@ export const createRoomSchema = z.object({
 		message: "Room Description must be at least 2 characters.",
 	}),
 	maxParticipants: z.coerce.number().min(2),
-	canParticipantsPublish: z.boolean(),
 });
 
 export const joinRoomSchema = z.object({

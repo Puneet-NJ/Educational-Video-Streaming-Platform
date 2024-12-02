@@ -22,21 +22,18 @@ roomRouter.post("/", auth(["Teacher", "Admin"]), async (req, res) => {
 		const roomName = validateInput.data.roomName;
 		const description = validateInput.data.description;
 		const maxParticipants = validateInput.data.maxParticipants;
-		const canParticipantsPublish = validateInput.data.canParticipantsPublish;
 		const teacherId = res.locals.id;
 		const username = res.locals.username;
 
-		// const usersRoom = await client.userInRoom.findMany({
+		// const user = await client.user.findFirst({
 		// 	where: {
-		// 		userId: teacherId,
+		// 		id: teacherId,
 		// 	},
 		// });
-		// usersRoom.map((room) => {
-		// 	if (room.isUserActive) {
-		// 		res.status(411).json({ msg: "You are already in a room" });
-		// 		return;
-		// 	}
-		// });
+		// if (user?.isPartOfRoom) {
+		// 	res.status(411).json({ msg: "You are already in a room" });
+		// 	return;
+		// }
 
 		const roomId = uuidv4();
 
@@ -51,33 +48,21 @@ roomRouter.post("/", auth(["Teacher", "Admin"]), async (req, res) => {
 
 		// put the room details and room permissions info in the db
 		try {
-			await client.$transaction(async (txn) => {
-				const room = await txn.room.create({
-					data: {
-						id: roomId,
-						name: roomName,
-						description,
-						maxParticipants,
-						teacherId,
-					},
-				});
-
-				await txn.roomPermissions.create({
-					data: {
-						canPublish: canParticipantsPublish,
-						roomId: roomId,
-					},
-				});
+			const room = await client.room.create({
+				data: {
+					id: roomId,
+					name: roomName,
+					description,
+					maxParticipants,
+					teacherId,
+				},
 			});
 		} catch (err) {
 			console.log(err);
 
-			await roomService
-				.deleteRoom(roomId)
-				.then(() => {
-					console.log("deleted the room");
-				})
-				.catch((err) => console.log(err));
+			await roomService.deleteRoom(roomId).then(() => {
+				console.log("deleted the room");
+			});
 
 			res.status(500).json({ msg: "Error while updating db" });
 			return;
@@ -108,6 +93,15 @@ roomRouter.post(
 			const role = res.locals.role;
 
 			// todo: check if user is already part of the room and return if so
+			// const user = await client.user.findFirst({
+			// 	where: {
+			// 		id: userId,
+			// 	},
+			// });
+			// if (user?.isPartOfRoom) {
+			// 	res.json({ msg: "You are already part of a room" });
+			// 	return;
+			// }
 
 			const roomInfo = await client.room.findFirst({
 				where: { id: roomId },
@@ -115,7 +109,6 @@ roomRouter.post(
 					name: true,
 					maxParticipants: true,
 					teacherId: true,
-					roomPermission: true,
 				},
 			});
 			if (!roomInfo) {
@@ -132,11 +125,13 @@ roomRouter.post(
 			let canPublish: boolean;
 			let roomAdmin: boolean;
 
-			canPublish = roomInfo.roomPermission?.canPublish || false;
+			canPublish = false;
 			roomAdmin = false;
-			if (role === "Teacher" || userId === roomInfo.teacherId) {
-				canPublish = true;
-				roomAdmin = true;
+			if (role === "Admin" || role === "Teacher") {
+				if (userId === roomInfo.teacherId) {
+					canPublish = true;
+					roomAdmin = true;
+				}
 			}
 
 			// create a token
@@ -182,19 +177,17 @@ roomRouter.post(
 			const userId = res.locals.id;
 			const roomId = validateInput.data.roomId;
 
+			await client.user.update({
+				where: { id: userId },
+				data: { isPartOfRoom: true },
+			});
+
 			const joinUser = await client.userInRoom.create({
 				data: {
 					userId,
 					roomId,
-					isUserActive: true,
 				},
 			});
-			console.log("1", joinUser);
-
-			const getAll = await client.userInRoom.findFirst({
-				where: { id: joinUser.id },
-			});
-			console.log("2", getAll);
 
 			res.json({ msg: "User joined the room", id: joinUser.id });
 		} catch (err) {
@@ -214,17 +207,18 @@ roomRouter.post(
 				return;
 			}
 
+			const userId = res.locals.id;
 			const participationId = validateInput.data.participationId;
 
-			const leftUser = await client.userInRoom.update({
-				where: {
-					id: participationId,
-				},
-				data: {
-					isUserActive: false,
-				},
+			await client.user.update({
+				where: { id: userId },
+				data: { isPartOfRoom: false },
 			});
-			console.log("3", leftUser);
+
+			const leftUser = await client.userInRoom.update({
+				where: { id: participationId },
+				data: { leftAt: new Date() },
+			});
 
 			res.json({ msg: "User left the room" });
 		} catch (err) {

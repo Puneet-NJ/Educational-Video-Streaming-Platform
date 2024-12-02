@@ -30,6 +30,7 @@ userRouter.post("/signup", async (req, res) => {
 				username,
 				password: hashedPassword,
 				role,
+				isPartOfRoom: false,
 			},
 		});
 
@@ -40,6 +41,8 @@ userRouter.post("/signup", async (req, res) => {
 
 		res.json({ msg: "Sign up successful", token });
 	} catch (err) {
+		console.log(err);
+
 		res.status(500).json({ msg: "Internal server error" });
 	}
 });
