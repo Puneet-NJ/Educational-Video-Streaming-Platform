@@ -79,6 +79,8 @@ userRouter.post("/signin", async (req, res) => {
 
 		res.json({ msg: "Sign in successful", token });
 	} catch (err) {
+		console.log(err);
+
 		res.status(500).json({ msg: "Internal server error" });
 	}
 });
