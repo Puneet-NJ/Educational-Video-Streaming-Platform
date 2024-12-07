@@ -1,5 +1,5 @@
 import useVideo from "@/Hooks/useVideo";
-import { teacherName } from "@/lib/atom";
+import { teacherNameAtom } from "@/lib/atom";
 import { useRecoilValue } from "recoil";
 import { Button } from "./ui/button";
 
@@ -18,7 +18,9 @@ export const Video = () => {
 
 		isTeacher,
 	} = useVideo();
-	const teacher = useRecoilValue(teacherName);
+	const teacher = useRecoilValue(teacherNameAtom);
+
+	console.log(publishScreen);
 
 	return (
 		<div>
@@ -34,7 +36,7 @@ export const Video = () => {
 				autoPlay
 				muted
 				playsInline
-				className={!publishScreen ? "hidden" : ""}
+				className={isTeacher && !publishScreen ? "hidden" : ""}
 			/>
 			<audio ref={audioRef} muted={true} autoPlay />
 			<div>Teacher Name: {teacher}</div>

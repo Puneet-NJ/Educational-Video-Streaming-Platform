@@ -73,7 +73,7 @@ const useCheckCard = () => {
 		});
 		localTracksRef.current = null;
 
-		tracksRef.current!.srcObject = null;
+		if (tracksRef.current) tracksRef.current.srcObject = null;
 	};
 
 	return { tracksRef, handleCameraToggle, handleMicToggle, handleJoinRoom };

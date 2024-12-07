@@ -8,3 +8,13 @@ export const userAtom = atom({
 		role: "",
 	},
 });
+
+export const teacherNameAtom = atom({
+	key: "teacherNameAtom",
+	default: "",
+});
+
+export const roomNameAtom = atom({
+	key: "roomNameAtom",
+	default: "",
+});

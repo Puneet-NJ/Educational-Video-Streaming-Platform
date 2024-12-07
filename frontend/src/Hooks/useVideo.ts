@@ -111,46 +111,48 @@ const useVideo = () => {
 				await currentRoomRef.current.connect(serverUrl, roomToken);
 
 				// publish video & audio if teacher
-				// if (roomAdmin && canPublish) {
-				// 	try {
-				// 		if (!(videoRef.current?.srcObject instanceof MediaStream)) {
-				// 			return;
-				// 		}
+				if (roomAdmin && canPublish) {
+					try {
+						if (!(videoRef.current?.srcObject instanceof MediaStream)) {
+							return;
+						}
 
-				// 		const videoTracks = videoRef.current.srcObject.getVideoTracks();
+						const videoTracks = videoRef.current.srcObject.getVideoTracks();
 
-				// 		const publishVideo =
-				// 			await currentRoomRef.current.localParticipant.publishTrack(
-				// 				videoTracks[0],
-				// 				{
-				// 					name: "videoTrack",
-				// 					simulcast: true,
-				// 					source: Track.Source.Camera,
-				// 				}
-				// 			);
+						const publishVideo =
+							await currentRoomRef.current.localParticipant.publishTrack(
+								videoTracks[0],
+								{
+									name: "videoTrack",
+									simulcast: true,
+									source: Track.Source.Camera,
+								}
+							);
 
-				// 		if (!(audioRef.current?.srcObject instanceof MediaStream)) {
-				// 			return;
-				// 		}
+						if (!(audioRef.current?.srcObject instanceof MediaStream)) {
+							return;
+						}
 
-				// 		const audioTracks = audioRef.current.srcObject.getTracks();
+						const audioTracks = audioRef.current.srcObject.getTracks();
 
-				// 		const publishAudio =
-				// 			await currentRoomRef.current.localParticipant.publishTrack(
-				// 				audioTracks[0],
-				// 				{
-				// 					name: "audioTrack",
-				// 					simulcast: true,
-				// 					source: Track.Source.Microphone,
-				// 				}
-				// 			);
+						const publishAudio =
+							await currentRoomRef.current.localParticipant.publishTrack(
+								audioTracks[0],
+								{
+									name: "audioTrack",
+									simulcast: true,
+									source: Track.Source.Microphone,
+								}
+							);
 
-				handleCameraToggle();
-				handleMicrophoneToggle();
-				// 	} catch (err) {
-				// 		console.log(err);
-				// 	}
-				// }
+						// if (roomAdmin && canPublish) {
+						// 	handleCameraToggle();
+						// 	handleMicrophoneToggle();
+						// }
+					} catch (err) {
+						console.log(err);
+					}
+				}
 			} catch (error) {
 				console.error("Room initialization error:", error);
 			}
@@ -183,6 +185,8 @@ const useVideo = () => {
 	}, [roomToken, roomId, serverUrl]);
 
 	const handleCameraToggle = async () => {
+		console.log("cam toggle");
+
 		try {
 			if (publishVideo) {
 				await currentRoomRef.current?.localParticipant.setCameraEnabled(false);
@@ -251,6 +255,8 @@ const useVideo = () => {
 		publication: RemoteTrackPublication,
 		participant: RemoteParticipant
 	) => {
+		console.log(track);
+
 		if (track.source === "screen_share") {
 			screenRef.current!.srcObject = null;
 

@@ -16,7 +16,7 @@ const Layout = ({ children }: { children: React.ReactNode }) => {
 				</div>
 			</header>
 
-			<div className="pt-16 h-[calc(100vh)]">{children}</div>
+			<div className="pt-28 h-[calc(100vh)]">{children}</div>
 		</div>
 	);
 };
