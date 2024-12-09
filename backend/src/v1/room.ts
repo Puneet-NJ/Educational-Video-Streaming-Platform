@@ -6,8 +6,8 @@ import {
 	leaveRoomSchema,
 } from "./types/zod.js";
 import { client, roomService } from "./utils/lib.js";
-import { AccessToken, Room } from "livekit-server-sdk";
 import { v4 as uuidv4 } from "uuid";
+import { createLivekitToken } from "./utils/createLivekitToken.js";
 
 const roomRouter = express.Router();
 
@@ -24,6 +24,7 @@ roomRouter.post("/", auth(["Teacher", "Admin"]), async (req, res) => {
 		const maxParticipants = validateInput.data.maxParticipants;
 		const teacherId = res.locals.id;
 		const username = res.locals.username;
+		const role = res.locals.role;
 
 		// const user = await client.user.findFirst({
 		// 	where: {
@@ -47,7 +48,7 @@ roomRouter.post("/", auth(["Teacher", "Admin"]), async (req, res) => {
 
 		// put the room details and room permissions info in the db
 		try {
-			const room = await client.room.create({
+			await client.room.create({
 				data: {
 					id: roomId,
 					name: roomName,
@@ -67,7 +68,15 @@ roomRouter.post("/", auth(["Teacher", "Admin"]), async (req, res) => {
 			return;
 		}
 
-		res.json({ msg: "Room created successfully", roomId });
+		const token = await createLivekitToken(
+			role,
+			teacherId,
+			teacherId,
+			username,
+			roomId
+		);
+
+		res.json({ msg: "Room created successfully", roomId, token });
 	} catch (err) {
 		console.log(err);
 
@@ -123,35 +132,13 @@ roomRouter.post(
 				return;
 			}
 
-			let canPublish: boolean;
-			let roomAdmin: boolean;
-
-			canPublish = false;
-			roomAdmin = false;
-			if (role === "Admin" || role === "Teacher") {
-				if (userId === roomInfo.teacherId) {
-					canPublish = true;
-					roomAdmin = true;
-				}
-			}
-
-			// create a token
-			const participant = new AccessToken(
-				process.env.LIVEKIT_API_KEY,
-				process.env.LIVEKIT_API_SECRET,
-				{
-					identity: username,
-					ttl: "1m",
-				}
+			const token = await createLivekitToken(
+				role,
+				userId,
+				roomInfo.teacherId,
+				username,
+				roomId
 			);
-			participant.addGrant({
-				roomAdmin: roomAdmin,
-				canPublish: canPublish,
-				roomJoin: true,
-				room: roomId,
-			});
-
-			const token = await participant.toJwt();
 
 			res.json({
 				msg: "Token generated successfully",

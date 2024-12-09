@@ -1,7 +1,7 @@
-import useRoomId_Token from "@/Hooks/useRoomId_Token";
+import useRoomToken from "@/Hooks/useRoomToken";
 import useCreateToken from "@/Hooks/useCreateToken";
 import { useEffect, useRef, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, useSearchParams } from "react-router-dom";
 import {
 	RemoteParticipant,
 	RemoteTrack,
@@ -26,13 +26,10 @@ interface Jwt {
 
 const useVideo = () => {
 	const serverUrl = import.meta.env.VITE_LIVEKIT_URL;
-	const { getRoomToken } = useRoomId_Token();
-	const roomToken = getRoomToken() || "";
+
 	const { createToken } = useCreateToken();
-	const params = useParams();
-	const roomId = params.roomId;
 	const username = useRef<String | null>(null);
-	const [isTeacher, setIsTeacher] = useState(false);
+	const [isTeacher, setIsTeacher] = useState<boolean | null>();
 
 	const videoRef = useRef<HTMLVideoElement | null>(null);
 	const audioRef = useRef<HTMLAudioElement | null>(null);
@@ -42,6 +39,24 @@ const useVideo = () => {
 	const [publishVideo, setPublishVideo] = useState(true);
 	const [publishAudio, setPublishAudio] = useState(true);
 	const [publishScreen, setPublishScreen] = useState(false);
+	const [teacherRoomId, setTeacherRoomId] = useState("");
+
+	const [searchParams, setSearchParams] = useSearchParams();
+	const { getRoomToken, clearRoomToken } = useRoomToken();
+
+	let roomToken: string | null = null;
+	const token = searchParams.get("at");
+	if (token) {
+		roomToken = token;
+	} else {
+		const roomToken_ss = getRoomToken();
+
+		if (roomToken_ss) roomToken = roomToken_ss;
+	}
+
+	const params = useParams();
+	let roomId = params.roomId?.trim();
+	console.log(roomId);
 
 	useEffect(() => {
 		const initializeRoom = async () => {
@@ -55,9 +70,19 @@ const useVideo = () => {
 				username.current = decodedToken.sub;
 				const { canPublish, roomAdmin, room: tokenRoomId } = decodedToken.video;
 
-				canPublish === true ? setIsTeacher(true) : setIsTeacher(false);
+				// canPublish === true ? setIsTeacher(true) : setIsTeacher(false);
+				if (canPublish) setIsTeacher(true);
+				else setIsTeacher(false);
 
-				if (tokenRoomId !== roomId) {
+				console.log(tokenRoomId, roomId, isTeacher);
+
+				if (isTeacher) {
+					setTeacherRoomId(tokenRoomId || "");
+				}
+
+				if (!isTeacher && tokenRoomId !== roomId) {
+					clearRoomToken();
+
 					return;
 				}
 
@@ -158,7 +183,9 @@ const useVideo = () => {
 			}
 		};
 
-		createToken({ roomId: roomId || "" });
+		if (!roomToken) {
+			createToken({ roomId: roomId || "" });
+		}
 		initializeRoom();
 
 		window.addEventListener("beforeunload", () => {
@@ -182,7 +209,7 @@ const useVideo = () => {
 				videoRef.current.srcObject = null;
 			}
 		};
-	}, [roomToken, roomId, serverUrl]);
+	}, [roomToken, roomId, serverUrl, isTeacher]);
 
 	const handleCameraToggle = async () => {
 		console.log("cam toggle");
@@ -303,7 +330,7 @@ const useVideo = () => {
 			if (videoTrack && videoRef.current) {
 				const videoElement = videoTrack.attach();
 				videoRef.current.srcObject = videoElement.srcObject;
-				await videoRef.current.play();
+				// await videoRef.current.play();
 			}
 		} catch (error) {
 			console.error("Error creating local tracks:", error);
@@ -332,6 +359,7 @@ const useVideo = () => {
 		publishScreen,
 
 		isTeacher,
+		teacherRoomId,
 	};
 };
 

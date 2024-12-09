@@ -15,7 +15,7 @@ const useJoinRoom = () => {
 	});
 
 	function onSubmit(values: z.infer<typeof joinRoomSchema>) {
-		navigate(`/space/${values.roomId}`);
+		navigate(`/watch/${values.roomId}`);
 	}
 
 	return {

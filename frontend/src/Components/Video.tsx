@@ -17,6 +17,7 @@ export const Video = () => {
 		publishScreen,
 
 		isTeacher,
+		teacherRoomId,
 	} = useVideo();
 	const teacher = useRecoilValue(teacherNameAtom);
 
@@ -31,13 +32,28 @@ export const Video = () => {
 				muted
 				playsInline
 			/>
-			<video
-				ref={screenRef}
-				autoPlay
-				muted
-				playsInline
-				className={isTeacher && !publishScreen ? "hidden" : ""}
-			/>
+
+			{isTeacher ? (
+				<>
+					<video
+						ref={screenRef}
+						autoPlay
+						muted
+						playsInline
+						className={!publishScreen ? "hidden" : ""}
+					/>
+					<span>RoomId: {teacherRoomId}</span>
+				</>
+			) : (
+				<video
+					ref={screenRef}
+					autoPlay
+					muted
+					playsInline
+					// className={!publishScreen ? "hidden" : ""}
+				/>
+			)}
+
 			<audio ref={audioRef} muted={true} autoPlay />
 			<div>Teacher Name: {teacher}</div>
 

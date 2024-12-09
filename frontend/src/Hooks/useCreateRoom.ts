@@ -6,13 +6,13 @@ import axios from "axios";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import useToken from "./useToken";
-import useRoomId_Token from "./useRoomId_Token";
+import useRoomId_Token from "./useRoomToken";
 import { useNavigate } from "react-router-dom";
 
 const useCreateRoom = () => {
 	const { getToken } = useToken();
 	const queryClient = useQueryClient();
-	const { setRoomId } = useRoomId_Token();
+	const { setRoomToken } = useRoomId_Token();
 	const navigate = useNavigate();
 
 	const mutation = useMutation({
@@ -24,13 +24,12 @@ const useCreateRoom = () => {
 				data: values,
 			}).then((response) => response.data),
 		onSuccess: (data) => {
-			const roomId = data.roomId;
-
-			setRoomId(roomId);
+			const roomToken = data.token;
+			setRoomToken(roomToken);
 
 			queryClient.invalidateQueries({ queryKey: ["room"] });
 
-			navigate("/check");
+			navigate(`/check?at=${roomToken}`);
 		},
 	});
 

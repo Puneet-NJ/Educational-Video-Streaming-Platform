@@ -2,7 +2,7 @@ import { BACKEND_URL } from "@/lib/lib";
 import { useMutation } from "@tanstack/react-query";
 import axios from "axios";
 import useToken from "./useToken";
-import useRoomId_Token from "./useRoomId_Token";
+import useRoomId_Token from "./useRoomToken";
 import { useSetRecoilState } from "recoil";
 import { roomNameAtom, teacherNameAtom } from "@/lib/atom";
 

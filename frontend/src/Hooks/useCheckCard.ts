@@ -1,7 +1,6 @@
 import { createLocalTracks, LocalTrack } from "livekit-client";
 import { useEffect, useRef, useState } from "react";
-import { useNavigate } from "react-router-dom";
-import useRoomId_Token from "./useRoomId_Token";
+import { useNavigate, useSearchParams } from "react-router-dom";
 
 const useCheckCard = () => {
 	const [camera, setCamera] = useState(true);
@@ -9,7 +8,9 @@ const useCheckCard = () => {
 	const tracksRef = useRef<HTMLVideoElement | null>(null);
 	const localTracksRef = useRef<LocalTrack[] | null>(null);
 	const navigate = useNavigate();
-	const { getRoomId } = useRoomId_Token();
+
+	const [queryParams, setQueryParams] = useSearchParams();
+	const roomToken = queryParams.get("at");
 
 	useEffect(() => {
 		clearTracks();
@@ -29,8 +30,6 @@ const useCheckCard = () => {
 				tracksRef.current!.srcObject = new MediaStream([
 					videoTrack.mediaStreamTrack,
 				]);
-
-				console.log(tracksRef.current?.srcObject);
 			} catch (err) {
 				tracksRef.current!.srcObject = null;
 
@@ -61,9 +60,7 @@ const useCheckCard = () => {
 	};
 
 	const handleJoinRoom = () => {
-		const roomId = getRoomId();
-
-		navigate(`/space/${roomId}`);
+		navigate(`/host?at=${roomToken}`);
 	};
 
 	const clearTracks = () => {

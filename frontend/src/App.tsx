@@ -5,6 +5,7 @@ import Home from "./Pages/Home";
 import Check from "./Pages/Check";
 import Space from "./Pages/Space";
 import Layout from "./Layout";
+import Host from "./Pages/Host";
 
 function App() {
 	return (
@@ -16,7 +17,10 @@ function App() {
 						<Route path="/signup" element={<Signup />} />
 						<Route path="/home" element={<Home />} />
 						<Route path="/check" element={<Check />} />
-						<Route path="/space/:roomId" element={<Space />} />
+
+						<Route path="/host" element={<Host />} />
+						{/* <Route path="/watch" element={<Host />} /> */}
+						<Route path="/watch/:roomId" element={<Space />} />
 					</Routes>
 				</Layout>
 			</BrowserRouter>
