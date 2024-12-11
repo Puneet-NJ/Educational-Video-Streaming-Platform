@@ -1,9 +1,14 @@
+import BoardSubscribe from "@/Components/BoardSubscibe";
 import { Video } from "@/Components/Video";
 
 const Space = () => {
 	return (
-		<div className="h-full w-full">
-			<div className="w-1/5">
+		<div className="grid grid-cols-4">
+			<div className="col-span-3">
+				<BoardSubscribe />
+			</div>
+
+			<div className="col-span-1">
 				<Video />
 			</div>
 		</div>

@@ -18,3 +18,8 @@ export const roomNameAtom = atom({
 	key: "roomNameAtom",
 	default: "",
 });
+
+export const roomIdAtom = atom({
+	key: "roomIdAtom",
+	default: "",
+});

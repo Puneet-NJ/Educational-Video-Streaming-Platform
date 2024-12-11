@@ -13,6 +13,8 @@ import {
 	createLocalTracks,
 } from "livekit-client";
 import { jwtDecode } from "jwt-decode";
+import { useSetRecoilState } from "recoil";
+import { roomIdAtom } from "@/lib/atom";
 
 interface Jwt {
 	sub: string;
@@ -40,6 +42,8 @@ const useVideo = () => {
 	const [publishAudio, setPublishAudio] = useState(true);
 	const [publishScreen, setPublishScreen] = useState(false);
 	const [teacherRoomId, setTeacherRoomId] = useState("");
+
+	const setRoomId = useSetRecoilState(roomIdAtom);
 
 	const [searchParams, setSearchParams] = useSearchParams();
 	const { getRoomToken, clearRoomToken } = useRoomToken();
@@ -75,6 +79,7 @@ const useVideo = () => {
 				else setIsTeacher(false);
 
 				console.log(tokenRoomId, roomId, isTeacher);
+				setRoomId(tokenRoomId);
 
 				if (isTeacher) {
 					setTeacherRoomId(tokenRoomId || "");

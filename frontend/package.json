@@ -10,6 +10,7 @@
 		"preview": "vite preview"
 	},
 	"dependencies": {
+		"@excalidraw/excalidraw": "^0.17.6",
 		"@hookform/resolvers": "^3.9.1",
 		"@livekit/components-react": "^2.6.9",
 		"@livekit/components-styles": "^1.1.4",
