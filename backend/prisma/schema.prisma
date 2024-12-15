@@ -37,6 +37,15 @@ model Room {
 
   userInRoom        UserInRoom[]
 
+  slides            SlidesImage[]
+}
+
+model SlidesImage {
+  id                String    @id   @default(uuid())
+  imageKey          String    
+
+  roomId            String
+  room              Room      @relation(fields: [roomId], references: [id])
 }
 
 model UserInRoom {

@@ -23,3 +23,8 @@ export const roomIdAtom = atom({
 	key: "roomIdAtom",
 	default: "",
 });
+
+export const slidesLinksAtom = atom({
+	key: "slidesLinksAtom",
+	default: [],
+});

@@ -1,4 +1,5 @@
 import BoardPublish from "@/Components/BoardPublish";
+import { MenuTeacher } from "@/Components/MenuTeacher";
 import { Video } from "@/Components/Video";
 
 const Host = () => {
@@ -10,6 +11,10 @@ const Host = () => {
 
 			<div className="col-span-1">
 				<Video />
+			</div>
+
+			<div>
+				<MenuTeacher />
 			</div>
 		</div>
 	);
