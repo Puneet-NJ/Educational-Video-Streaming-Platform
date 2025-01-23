@@ -25,7 +25,7 @@ interface Rooms {
 export const ROOMS = new Map<string, Rooms>();
 
 // Chats Schema
-type ChatMetaData = {
+export type ChatMetaData = {
 	name: string;
 	text: string;
 	time: Date;

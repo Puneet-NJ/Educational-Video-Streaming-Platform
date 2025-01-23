@@ -1,6 +1,7 @@
 import { WebSocketServer } from "ws";
-import { ROOMS, USER_ROOM } from "./types";
+import { ChatMetaData, CHATS, ROOMS, USER_ROOM } from "./types";
 import { jwtVerify, processStroke } from "./helper";
+import { v4 as uuidv4 } from "uuid";
 
 require("dotenv").config();
 
@@ -44,6 +45,8 @@ wss.on("connection", (socket) => {
 					},
 					Sockets: new Map(),
 				});
+
+				CHATS.set(roomId, new Map());
 			}
 
 			if (ROOMS.get(roomId)!.Sockets.has(socket)) {
@@ -64,18 +67,24 @@ wss.on("connection", (socket) => {
 				socket.send(
 					JSON.stringify({
 						type: "joined",
-						ROOMS: ROOMS.get(roomId)?.Sockets.get(socket),
-						USER_ROOM: USER_ROOM.get(socket),
+						// ROOMS: ROOMS.get(roomId)?.Sockets.get(socket),
+						// USER_ROOM: USER_ROOM.get(socket),
 					})
 				);
 				return;
 			}
+
+			const chats: ChatMetaData[] = [];
+			CHATS.get(roomId)?.forEach((chat) => {
+				chats.push(chat);
+			});
 
 			socket.send(
 				JSON.stringify({
 					type: "joined",
 					scene,
 					stroke,
+					chats: chats,
 				})
 			);
 			return;
@@ -154,6 +163,44 @@ wss.on("connection", (socket) => {
 					);
 			});
 			return;
+		}
+
+		// Chats
+		if (type === "sendChat") {
+			const { chat } = JSON.parse(data.toString());
+
+			if (!ROOMS.get(roomId)) {
+				socket.send(JSON.stringify({ type: "No room with this Id exists" }));
+				return;
+			}
+
+			const socketMetaData = ROOMS.get(roomId)?.Sockets.get(socket);
+			if (!socketMetaData) {
+				socket.send(JSON.stringify({ type: "You are not part of the room" }));
+				return;
+			}
+
+			CHATS.get(roomId)?.set(uuidv4(), {
+				name: socketMetaData.name,
+				text: chat,
+				time: new Date(),
+			});
+
+			const chats = CHATS.get(roomId);
+
+			const chatsArray: { [key: string]: ChatMetaData }[] = [];
+
+			if (chats) {
+				Array.from(chats).forEach(([key, chatData]) => {
+					chatsArray.push({ [key]: chatData });
+				});
+			}
+
+			ROOMS.get(roomId)?.Sockets.forEach((value, key) => {
+				key.send(
+					JSON.stringify({ type: "recieve-chat", chats: [...chatsArray] })
+				);
+			});
 		}
 	});
 
