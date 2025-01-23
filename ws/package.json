@@ -10,7 +10,11 @@
   "license": "ISC",
   "description": "",
   "dependencies": {
+    "@types/dotenv": "^6.1.1",
+    "@types/jsonwebtoken": "^9.0.7",
     "@types/ws": "^8.5.13",
+    "dotenv": "^16.4.7",
+    "jsonwebtoken": "^9.0.2",
     "ws": "^8.18.0"
   }
 }

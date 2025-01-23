@@ -1,5 +1,8 @@
 import { WebSocketServer } from "ws";
-import { ROOMS } from "./types";
+import { ROOMS, USER_ROOM } from "./types";
+import { jwtVerify, processStroke } from "./helper";
+
+require("dotenv").config();
 
 const wss = new WebSocketServer({ port: 8080 });
 
@@ -8,42 +11,180 @@ wss.on("connection", (socket) => {
 		const { type, roomId } = JSON.parse(data.toString());
 
 		if (type === "joinClass") {
-			if (!ROOMS.has(roomId)) {
-				ROOMS.set(roomId, { sockets: [] });
-			}
-			ROOMS.get(roomId)?.sockets.push(socket);
+			const { token, scene, stroke } = JSON.parse(data.toString());
 
-			socket.send(JSON.stringify({ type: "joined" }));
+			let username: string;
+			let role: "Student" | "Teacher" | "Admin";
+
+			const tokenVerify = jwtVerify(token);
+			if (tokenVerify === "error") {
+				socket.send(JSON.stringify({ type: "Invalid token" }));
+				return;
+			} else {
+				username = tokenVerify.username;
+				role = tokenVerify.role;
+			}
+
+			if (!ROOMS.has(roomId)) {
+				// if not role is teacher return
+				if (role !== "Teacher") {
+					socket.send(
+						JSON.stringify({ type: "There exists no room with this room Id" })
+					);
+					return;
+				}
+
+				let modifiedStroke = null;
+				if (stroke) modifiedStroke = processStroke(stroke);
+
+				ROOMS.set(roomId, {
+					Room_MetaData: {
+						currScene: scene || "Teacher",
+						currStroke: modifiedStroke,
+					},
+					Sockets: new Map(),
+				});
+			}
+
+			if (ROOMS.get(roomId)!.Sockets.has(socket)) {
+				socket.send(
+					JSON.stringify({ type: "you are already part of this room" })
+				);
+				return;
+			}
+
+			ROOMS.get(roomId)!.Sockets.set(socket, {
+				name: username,
+				isTeacher: role === "Teacher",
+			});
+
+			USER_ROOM.set(socket, roomId);
+
+			if (role === "Teacher") {
+				socket.send(
+					JSON.stringify({
+						type: "joined",
+						ROOMS: ROOMS.get(roomId)?.Sockets.get(socket),
+						USER_ROOM: USER_ROOM.get(socket),
+					})
+				);
+				return;
+			}
+
+			socket.send(
+				JSON.stringify({
+					type: "joined",
+					scene,
+					stroke,
+				})
+			);
+			return;
+		}
+
+		if (type === "leaveClass") {
+			if (!ROOMS.has(roomId)) {
+				socket.send(JSON.stringify({ type: "No room with this Id exists" }));
+				return;
+			}
+
+			const socketMetaData = ROOMS.get(roomId)?.Sockets.get(socket);
+
+			if (socketMetaData?.isTeacher) {
+				socket.send(JSON.stringify({ type: "left" }));
+				ROOMS.get(roomId)?.Sockets.forEach((value, key) => {
+					if (key !== socket)
+						key.send(JSON.stringify({ type: "teacher-left" }));
+				});
+
+				ROOMS.delete(roomId);
+				return;
+			}
+
+			socket.send(JSON.stringify({ type: "left" }));
+
+			ROOMS.get(roomId)?.Sockets.delete(socket);
+			return;
+		}
+
+		if (type === "currScene") {
+			const { scene } = JSON.parse(data.toString());
+
+			if (!ROOMS.has(roomId)) {
+				socket.send(JSON.stringify({ type: "No room with this Id exists" }));
+				return;
+			}
+
+			const socketMetaData = ROOMS.get(roomId)?.Sockets.get(socket);
+
+			if (!socketMetaData) {
+				socket.send(JSON.stringify({ type: "You are not part of the room" }));
+				return;
+			}
+
+			if (!socketMetaData.isTeacher) {
+				socket.send(JSON.stringify({ type: "You are not the teacher" }));
+				return;
+			}
+
+			ROOMS.get(roomId)!.Room_MetaData.currScene = scene;
+
+			ROOMS.get(roomId)!.Sockets.forEach((value, key) => {
+				if (key !== socket)
+					key.send(JSON.stringify({ type: "currScene", scene: scene }));
+			});
+			return;
 		}
 
 		if (type === "sendStroke") {
 			const { stroke } = JSON.parse(data.toString());
 
-			const dummyAppState = { ...stroke.appState };
-			dummyAppState.collaborators = [];
-			dummyAppState.viewModeEnabled = true;
+			if (!ROOMS.has(roomId)) {
+				socket.send(JSON.stringify({ type: "No room with this Id exists" }));
+				return;
+			}
 
-			const dummyStroke = {
-				elements: stroke.elements,
-				appState: dummyAppState,
-			};
+			const modifiedStroke = processStroke(stroke);
 
-			if (!ROOMS.has(roomId)) return;
+			ROOMS.get(roomId)!.Room_MetaData.currStroke = modifiedStroke;
 
-			ROOMS.get(roomId)?.sockets.map((individualSocket) => {
-				if (individualSocket !== socket)
-					individualSocket.send(
-						JSON.stringify({ type: "recieve-stroke", stroke: dummyStroke })
+			ROOMS.get(roomId)!.Sockets.forEach((value, key) => {
+				if (key !== socket)
+					key.send(
+						JSON.stringify({ type: "recieve-stroke", stroke: modifiedStroke })
 					);
 			});
+			return;
 		}
 	});
 
 	socket.on("close", () => {
-		ROOMS.forEach((room) => {
-			room.sockets.map((individualSocket, index) => {
-				if (individualSocket === socket) room.sockets.splice(index, 1);
+		const roomId = USER_ROOM.get(socket) || "";
+
+		if (!ROOMS.has(roomId)) {
+			socket.send(JSON.stringify({ type: "No room with this Id exists" }));
+			return;
+		}
+
+		const socketMetaData = ROOMS.get(roomId)?.Sockets.get(socket);
+
+		if (socketMetaData?.isTeacher) {
+			ROOMS.delete(roomId);
+
+			socket.send(JSON.stringify({ type: "left" }));
+			ROOMS.get(roomId)?.Sockets.forEach((value, key) => {
+				if (key !== socket) key.send(JSON.stringify({ type: "teacher-left" }));
 			});
-		});
+
+			return;
+		}
+
+		ROOMS.get(roomId)?.Sockets.delete(socket);
+
+		socket.send(JSON.stringify({ type: "left" }));
+		return;
+	});
+
+	socket.on("error", (err) => {
+		console.log(err);
 	});
 });
