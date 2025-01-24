@@ -67,8 +67,6 @@ wss.on("connection", (socket) => {
 				socket.send(
 					JSON.stringify({
 						type: "joined",
-						// ROOMS: ROOMS.get(roomId)?.Sockets.get(socket),
-						// USER_ROOM: USER_ROOM.get(socket),
 					})
 				);
 				return;
@@ -98,14 +96,18 @@ wss.on("connection", (socket) => {
 
 			const socketMetaData = ROOMS.get(roomId)?.Sockets.get(socket);
 
+			USER_ROOM.delete(socket);
+
 			if (socketMetaData?.isTeacher) {
+				ROOMS.delete(roomId);
+				CHATS.delete(roomId);
+
 				socket.send(JSON.stringify({ type: "left" }));
 				ROOMS.get(roomId)?.Sockets.forEach((value, key) => {
 					if (key !== socket)
 						key.send(JSON.stringify({ type: "teacher-left" }));
 				});
 
-				ROOMS.delete(roomId);
 				return;
 			}
 
@@ -202,6 +204,10 @@ wss.on("connection", (socket) => {
 				);
 			});
 		}
+
+		if (type === "see") {
+			socket.send(JSON.stringify({ ROOMS, CHATS, USER_ROOM }));
+		}
 	});
 
 	socket.on("close", () => {
@@ -214,8 +220,11 @@ wss.on("connection", (socket) => {
 
 		const socketMetaData = ROOMS.get(roomId)?.Sockets.get(socket);
 
+		USER_ROOM.delete(socket);
+
 		if (socketMetaData?.isTeacher) {
 			ROOMS.delete(roomId);
+			CHATS.delete(roomId);
 
 			socket.send(JSON.stringify({ type: "left" }));
 			ROOMS.get(roomId)?.Sockets.forEach((value, key) => {

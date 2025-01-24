@@ -21,8 +21,6 @@ export const Video = () => {
 	} = useVideo();
 	const teacher = useRecoilValue(teacherNameAtom);
 
-	console.log(publishScreen);
-
 	return (
 		<div>
 			<video

@@ -23,6 +23,7 @@ const useSignup = () => {
 				url: `${BACKEND_URL}/user/signup`,
 				data: values,
 			}).then((res) => res.data),
+
 		onSuccess: (data) => {
 			setToken(data.token);
 			queryClient.invalidateQueries({ queryKey: ["user"] });

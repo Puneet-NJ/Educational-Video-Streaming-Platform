@@ -11,6 +11,7 @@ import { createLivekitToken } from "./utils/createLivekitToken.js";
 
 const roomRouter = express.Router();
 
+// todo: In create room and create token check if the user is already part of a room and return if they are
 roomRouter.post("/", auth(["Teacher", "Admin"]), async (req, res) => {
 	try {
 		const validateInput = createRoomSchema.safeParse(req.body);
@@ -153,28 +154,23 @@ roomRouter.post(
 );
 
 roomRouter.post(
-	"/join",
+	"/join/:roomId",
 	auth(["Teacher", "Admin", "Student"]),
 	async (req, res) => {
 		try {
-			const validateInput = joinRoomSchema.safeParse(req.body);
-			if (!validateInput.success) {
-				res.status(411).json({ msg: "Invalid inputs" });
+			const userId = res.locals.id;
+			const roomId = req.params.roomId;
+
+			if (!roomId || roomId === "") {
+				res.status(411).json({ msg: "Room Id not provided" });
 				return;
 			}
-
-			const userId = res.locals.id;
-			const roomId = validateInput.data.roomId;
-
-			await client.user.update({
-				where: { id: userId },
-				data: { isPartOfRoom: true },
-			});
 
 			const joinUser = await client.userInRoom.create({
 				data: {
 					userId,
 					roomId,
+					isPartOfRoom: true,
 				},
 			});
 
@@ -186,27 +182,16 @@ roomRouter.post(
 );
 
 roomRouter.post(
-	"/leave",
+	"/leave/:participationId",
 	auth(["Teacher", "Admin", "Student"]),
 	async (req, res) => {
 		try {
-			const validateInput = leaveRoomSchema.safeParse(req.body);
-			if (!validateInput.success) {
-				res.status(411).json({ msg: "Invalid inputs" });
-				return;
-			}
-
 			const userId = res.locals.id;
-			const participationId = validateInput.data.participationId;
-
-			await client.user.update({
-				where: { id: userId },
-				data: { isPartOfRoom: false },
-			});
+			const participationId = req.params.participationId;
 
 			const leftUser = await client.userInRoom.update({
 				where: { id: participationId },
-				data: { leftAt: new Date() },
+				data: { leftAt: new Date(), isPartOfRoom: false },
 			});
 
 			res.json({ msg: "User left the room" });

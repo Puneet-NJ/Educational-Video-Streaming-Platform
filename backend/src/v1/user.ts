@@ -3,6 +3,7 @@ import { userSigninSchema, userSignupSchema } from "./types/zod.js";
 import { client } from "./utils/lib.js";
 import { compare, hash } from "bcrypt";
 import jwt from "jsonwebtoken";
+import auth from "./middleware/auth.js";
 
 const userRouter = express.Router();
 
@@ -30,7 +31,6 @@ userRouter.post("/signup", async (req, res) => {
 				username,
 				password: hashedPassword,
 				role,
-				isPartOfRoom: false,
 			},
 		});
 
@@ -84,5 +84,32 @@ userRouter.post("/signin", async (req, res) => {
 		res.status(500).json({ msg: "Internal server error" });
 	}
 });
+
+userRouter.get(
+	"/isPresentInRoom/:roomId",
+	auth(["Admin", "Student", "Teacher"]),
+	async (req, res) => {
+		try {
+			const roomId = req.params.roomId;
+			const userId = res.locals.id;
+
+			const response = await client.userInRoom.findFirst({
+				where: {
+					roomId,
+					userId,
+				},
+			});
+
+			if (!response) {
+				res.status(403).json({ msg: "User is not part of this room" });
+				return;
+			}
+
+			res.json({ msg: "User is part of room" });
+		} catch (err) {
+			res.status(500).json({ msg: "Internal server error" });
+		}
+	}
+);
 
 export { userRouter };

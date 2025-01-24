@@ -27,7 +27,8 @@ const BoardPublish = () => {
 		appState: AppState,
 		files: BinaryFiles
 	) => {
-		console.log(elements, appState);
+		console.log(elements);
+		console.log(appState);
 
 		if (!wsRef.current) return;
 

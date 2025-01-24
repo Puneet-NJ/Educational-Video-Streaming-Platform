@@ -3,17 +3,18 @@ import axios from "axios";
 import { useState } from "react";
 import useToken from "./useToken";
 import { useMutation } from "@tanstack/react-query";
-import { useSetRecoilState, useRecoilValue } from "recoil";
+import { useRecoilValue, useRecoilState } from "recoil";
 import { roomIdAtom, slidesLinksAtom } from "@/lib/atom";
 
-const useMenuTeacher = () => {
+const useSlidesTeacher = () => {
 	const [slides, setSlides] = useState<File>();
-	const [slideLinks, setSlideLinks] = useState([]);
+	const [currSlideIndex, setCurrSlideIndex] = useState(0);
+
 	const maxSlidesSize = 5 * 1000000;
 	const { getToken } = useToken();
 	const roomId = useRecoilValue(roomIdAtom);
 
-	const setSlidesLinks = useSetRecoilState(slidesLinksAtom);
+	const [slidesLink, setSlidesLinks] = useRecoilState(slidesLinksAtom);
 
 	const mutation = useMutation({
 		mutationFn: (formData: FormData) =>
@@ -28,13 +29,22 @@ const useMenuTeacher = () => {
 			}),
 
 		onSuccess: (response) => {
-			setSlideLinks(response.data.slides);
 			setSlidesLinks(response.data.slides);
 		},
 	});
 
 	const handleSlidesChange = (e: React.ChangeEvent<HTMLInputElement>) => {
 		setSlides(e.target.files?.[0]);
+	};
+
+	const slideImageChange = (to: "prev" | "next") => {
+		if (currSlideIndex === 0 && to === "prev") return;
+		if (currSlideIndex === slidesLink.length - 1 && to === "next") return;
+
+		setCurrSlideIndex((prev) => {
+			if (to === "next") return prev + 1;
+			return prev - 1;
+		});
 	};
 
 	const handleUploadSlides = () => {
@@ -55,9 +65,10 @@ const useMenuTeacher = () => {
 	return {
 		handleSlidesChange,
 		handleUploadSlides,
+		slideImageChange,
 
-		slideLinks,
+		currSlideIndex,
 	};
 };
 
-export default useMenuTeacher;
+export default useSlidesTeacher;

@@ -131,6 +131,8 @@ const useVideo = () => {
 					},
 				});
 
+				console.log(currentRoomRef.current);
+
 				currentRoomRef.current.on(
 					RoomEvent.TrackSubscribed,
 					handleTrackSubscribed
@@ -282,6 +284,8 @@ const useVideo = () => {
 
 				screenRef.current!.srcObject = mediaStream;
 			}
+
+			console.log("jsdlkfkld");
 
 			setPublishScreen((prev) => !prev);
 		} catch (err) {

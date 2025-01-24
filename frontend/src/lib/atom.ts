@@ -28,3 +28,8 @@ export const slidesLinksAtom = atom({
 	key: "slidesLinksAtom",
 	default: [],
 });
+
+export const userInRoomIdAtom = atom({
+	key: "userInRoomIdAtom",
+	default: "",
+});

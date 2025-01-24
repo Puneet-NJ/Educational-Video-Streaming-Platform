@@ -17,7 +17,6 @@ model User {
   id                String    @id   @default(uuid())
   username          String    @unique
   password          String
-  isPartOfRoom      Boolean
   role              Role
 
   room              Room[]
@@ -50,6 +49,7 @@ model SlidesImage {
 
 model UserInRoom {
   id                String    @id   @default(uuid())
+  isPartOfRoom      Boolean
   joindedAt         DateTime  @default(now())
   leftAt            DateTime?  @default(now())
 
