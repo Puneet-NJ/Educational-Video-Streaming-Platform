@@ -2,7 +2,7 @@ import WebSocket from "ws";
 
 // Rooms Schema
 type Slides = {
-	currSlide: number;
+	currSlide: number | null;
 };
 
 type CurrScene = "Teacher" | "Screen Share" | "White Board" | Slides;

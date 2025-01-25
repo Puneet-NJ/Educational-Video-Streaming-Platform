@@ -1,8 +1,10 @@
 import useRoomToken from "@/Hooks/useRoomToken";
 import useCreateToken from "@/Hooks/useCreateToken";
 import { useEffect, useRef, useState } from "react";
-import { useParams, useSearchParams } from "react-router-dom";
+import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 import {
+	LocalParticipant,
+	LocalTrackPublication,
 	RemoteParticipant,
 	RemoteTrack,
 	RemoteTrackPublication,
@@ -34,7 +36,7 @@ const useVideo = () => {
 	const serverUrl = import.meta.env.VITE_LIVEKIT_URL;
 
 	const { createToken } = useCreateToken();
-	const username = useRef<String | null>(null);
+	const username = useRef<string | null>(null);
 	const [isTeacher, setIsTeacher] = useState<boolean | null>(); //
 
 	const videoRef = useRef<HTMLVideoElement | null>(null);
@@ -50,6 +52,7 @@ const useVideo = () => {
 	const { getToken } = useToken();
 	const setUserInRoomId = useSetRecoilState(userInRoomIdAtom);
 	const userInRoomId = useRecoilValue(userInRoomIdAtom);
+	const navigate = useNavigate();
 
 	const setRoomId = useSetRecoilState(roomIdAtom);
 	const roomIdRecoil = useRecoilValue(roomIdAtom);
@@ -69,7 +72,6 @@ const useVideo = () => {
 
 	const params = useParams();
 	let roomId = params.roomId?.trim() || roomIdRecoil;
-	console.log(roomId);
 
 	const joinRoomMutation = useMutation({
 		mutationFn: () =>
@@ -80,8 +82,6 @@ const useVideo = () => {
 			}),
 
 		onSuccess: (response) => {
-			console.log(response.data.id);
-
 			setUserInRoomId(response.data.id);
 		},
 	});
@@ -93,6 +93,10 @@ const useVideo = () => {
 				method: "POST",
 				headers: { Authorization: `Bearer ${getToken()}` },
 			}),
+
+		onSuccess: () => {
+			navigate("/home");
+		},
 	});
 
 	useEffect(() => {
@@ -110,7 +114,6 @@ const useVideo = () => {
 				if (canPublish) setIsTeacher(true);
 				else setIsTeacher(false);
 
-				console.log(tokenRoomId, roomId, isTeacher);
 				setRoomId(tokenRoomId);
 
 				if (isTeacher) {
@@ -130,8 +133,6 @@ const useVideo = () => {
 						resolution: VideoPresets.h720.resolution,
 					},
 				});
-
-				console.log(currentRoomRef.current);
 
 				currentRoomRef.current.on(
 					RoomEvent.TrackSubscribed,
@@ -194,21 +195,7 @@ const useVideo = () => {
 
 		initializeRoom();
 
-		console.log("before room join");
 		if (roomId) handleJoinRoom();
-		console.log("after room join");
-
-		window.addEventListener("beforeunload", () => {
-			if (currentRoomRef.current) {
-				currentRoomRef.current.disconnect();
-			}
-
-			if (videoRef.current) {
-				videoRef.current.srcObject = null;
-			}
-
-			handleLeaveRoom();
-		});
 
 		return () => {
 			console.log("video comp unmounted");
@@ -220,14 +207,10 @@ const useVideo = () => {
 			if (videoRef.current) {
 				videoRef.current.srcObject = null;
 			}
-
-			handleLeaveRoom();
 		};
 	}, [roomToken, roomId, serverUrl, isTeacher]);
 
 	const handleCameraToggle = async () => {
-		console.log("cam toggle");
-
 		try {
 			if (publishVideo) {
 				await currentRoomRef.current?.localParticipant.setCameraEnabled(false);
@@ -285,8 +268,6 @@ const useVideo = () => {
 				screenRef.current!.srcObject = mediaStream;
 			}
 
-			console.log("jsdlkfkld");
-
 			setPublishScreen((prev) => !prev);
 		} catch (err) {
 			console.log(err);
@@ -298,8 +279,6 @@ const useVideo = () => {
 		publication: RemoteTrackPublication,
 		participant: RemoteParticipant
 	) => {
-		console.log(track);
-
 		if (track.source === "screen_share") {
 			screenRef.current!.srcObject = null;
 
@@ -354,15 +333,51 @@ const useVideo = () => {
 	};
 
 	const handleJoinRoom = () => {
-		console.log("room join");
-
 		joinRoomMutation.mutate();
 	};
 
-	const handleLeaveRoom = () => {
-		console.log("room leave");
+	const handleLeaveRoom = async () => {
+		try {
+			const localParticipant = currentRoomRef.current?.localParticipant;
 
-		leaveRoomMutation.mutate();
+			if (localParticipant) {
+				// Remove all published tracks
+				localParticipant.getTrackPublications().forEach(async (publication) => {
+					if (publication.track) {
+						publication.track.detach();
+						await localParticipant.unpublishTrack(
+							publication.track.mediaStreamTrack
+						);
+					}
+				});
+
+				// Stop all tracks
+				const localTracks = [
+					videoRef.current?.srcObject as MediaStream,
+					audioRef.current?.srcObject as MediaStream,
+					screenRef.current?.srcObject as MediaStream,
+				];
+
+				localTracks.forEach((mediaStream) => {
+					if (mediaStream) {
+						mediaStream.getTracks().forEach((track) => track.stop());
+					}
+				});
+			}
+
+			// Disconnect from room
+			await currentRoomRef.current?.disconnect();
+
+			// Clear all refs
+			if (videoRef.current) videoRef.current.srcObject = null;
+			if (audioRef.current) audioRef.current.srcObject = null;
+			if (screenRef.current) screenRef.current.srcObject = null;
+
+			// Trigger room leave mutation
+			leaveRoomMutation.mutate();
+		} catch (error) {
+			console.error("Error leaving room:", error);
+		}
 	};
 
 	return {
@@ -373,6 +388,7 @@ const useVideo = () => {
 		handleCameraToggle,
 		handleMicrophoneToggle,
 		handleShareScreenToggle,
+		handleLeaveRoom,
 
 		publishVideo,
 		publishAudio,

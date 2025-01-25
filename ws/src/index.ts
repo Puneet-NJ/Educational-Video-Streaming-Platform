@@ -119,6 +119,7 @@ wss.on("connection", (socket) => {
 
 		if (type === "currScene") {
 			const { scene } = JSON.parse(data.toString());
+			console.log(scene);
 
 			if (!ROOMS.has(roomId)) {
 				socket.send(JSON.stringify({ type: "No room with this Id exists" }));
@@ -148,6 +149,7 @@ wss.on("connection", (socket) => {
 
 		if (type === "sendStroke") {
 			const { stroke } = JSON.parse(data.toString());
+			// console.log(stroke);
 
 			if (!ROOMS.has(roomId)) {
 				socket.send(JSON.stringify({ type: "No room with this Id exists" }));
@@ -170,6 +172,8 @@ wss.on("connection", (socket) => {
 		// Chats
 		if (type === "sendChat") {
 			const { chat } = JSON.parse(data.toString());
+
+			console.log(chat);
 
 			if (!ROOMS.get(roomId)) {
 				socket.send(JSON.stringify({ type: "No room with this Id exists" }));

@@ -1,5 +1,6 @@
 import fs from "fs";
 import { s3Init } from "./lib.js";
+import { client } from "./lib.js";
 
 export const uploadToS3 = async (
 	imagePath: string,
@@ -39,4 +40,16 @@ export const uploadToS3 = async (
 	}
 
 	return "success";
+};
+
+export const roomSlides = async (roomId: string) => {
+	try {
+		const slidesLinks = await client.slidesImage.findMany({
+			where: { roomId },
+		});
+
+		return slidesLinks;
+	} catch (err) {
+		return "error";
+	}
 };

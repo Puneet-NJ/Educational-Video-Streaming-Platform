@@ -2,49 +2,69 @@ import useSlidesTeacher from "@/Hooks/useSlidesTeacher";
 import { Input } from "./ui/input";
 import { Button } from "./ui/button";
 import { useRecoilValue } from "recoil";
-import { slidesLinksAtom } from "@/lib/atom";
+import { currSlideAtom, slidesLinksAtom } from "@/lib/atom";
 import { ArrowLeft, ArrowRight } from "lucide-react";
-export const SlidesTeacher = () => {
-	const {
-		handleSlidesChange,
-		handleUploadSlides,
-		currSlideIndex,
-		slideImageChange,
-	} = useSlidesTeacher();
+import { useMemo } from "react";
+
+export const SlidesTeacher = ({
+	handleChangeScene,
+}: {
+	handleChangeScene: (
+		activeScene: "slides" | "board" | "default" | "screen"
+	) => void;
+}) => {
+	const { handleSlidesChange, handleUploadSlides, slideImageChange } =
+		useSlidesTeacher(handleChangeScene);
+
+	const currSlideIndex = useRecoilValue(currSlideAtom);
 	const slidesLinks = useRecoilValue(slidesLinksAtom);
+
+	const isLastSlide = useMemo(
+		() => (currSlideIndex === slidesLinks.length - 1 ? true : false),
+		[currSlideIndex, slidesLinks]
+	);
+
+	const isFirstSlide = useMemo(
+		() => (currSlideIndex === 0 ? true : false),
+		[currSlideIndex]
+	);
 
 	console.log(slidesLinks);
 
 	return (
-		<div className="max-w-full max-h-full bg-red-400 flex justify-center items-center">
-			<div className="flex flex-col justify-center items-center w-full max-w-3xl">
+		<div className="w-full h-full flex justify-center items-center">
+			<div className="flex flex-col justify-center items-center w-full h-full">
 				{slidesLinks.length > 0 ? (
-					<>
-						<div className="flex items-center w-full">
+					<div className="flex items-center w-full relative">
+						<div className="relative w-full h-full p-1 border bg-purple-400 border-gray-300 flex justify-center items-center">
+							<img
+								className="w-full h-full object-contain"
+								src={
+									import.meta.env.VITE_CLOUDFRONT_URL +
+									slidesLinks[currSlideIndex!]
+								}
+								alt="Slide"
+							/>
 							<Button
-								className="rounded-full mx-2"
+								className={
+									"absolute left-2 top-1/2 -translate-y-1/2 rounded-full bg-white/50 hover:bg-white/75" +
+									(isFirstSlide ? " cursor-not-allowed" : null)
+								}
 								onClick={() => slideImageChange("prev")}
 							>
 								<ArrowLeft />
 							</Button>
-							<div className="relative flex-grow h-[500px] bg-white border border-gray-300">
-								<img
-									className="w-full h-full object-contain block"
-									src={
-										import.meta.env.VITE_CLOUDFRONT_URL +
-										slidesLinks[currSlideIndex]
-									}
-									alt="Slide"
-								/>
-							</div>
 							<Button
-								className="rounded-full mx-2"
+								className={
+									"absolute right-2 top-1/2 -translate-y-1/2 rounded-full bg-white/50 hover:bg-white/75" +
+									(isLastSlide ? " cursor-not-allowed" : null)
+								}
 								onClick={() => slideImageChange("next")}
 							>
 								<ArrowRight />
 							</Button>
 						</div>
-					</>
+					</div>
 				) : (
 					<>
 						<div className="grid w-full max-w-sm items-center gap-1.5">

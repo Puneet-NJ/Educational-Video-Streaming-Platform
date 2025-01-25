@@ -5,7 +5,7 @@ import { client, maxPdfSize } from "./utils/lib.js";
 import { slidesValidation } from "./types/zod.js";
 import { exec } from "child_process";
 import fs from "fs";
-import { uploadToS3 } from "./utils/helper.js";
+import { roomSlides, uploadToS3 } from "./utils/helper.js";
 
 const upload = multer({
 	dest: "uploads/pdf/",
@@ -13,6 +13,35 @@ const upload = multer({
 });
 
 const slidesRouter = express.Router();
+
+slidesRouter.get(
+	"/:roomId",
+	auth(["Admin", "Teacher", "Student"]),
+	async (req, res) => {
+		try {
+			const { roomId } = req.params;
+
+			const response = await roomSlides(roomId);
+			if (response === "error") {
+				res.status(500).json({ msg: "Internal Server Error" });
+				return;
+			}
+
+			const slideImages = response.map((image) => image.imageKey);
+
+			const slides = slideImages.sort();
+
+			if (slides.length === 0) {
+				res.json({ slidesLinks: null });
+				return;
+			}
+
+			res.json({ slidesLinks: slides });
+		} catch (err) {
+			res.status(500).json({ msg: "Internal Server Error" });
+		}
+	}
+);
 
 slidesRouter.post(
 	"/:roomId",
@@ -51,6 +80,12 @@ slidesRouter.post(
 				res
 					.status(403)
 					.json({ msg: "You are not the teacher of the space/room" });
+				return;
+			}
+
+			const slidesLinks = await roomSlides(roomId);
+			if (slidesLinks.length >= 1) {
+				res.status(400).json({ msg: "Slides already uploaded" });
 				return;
 			}
 

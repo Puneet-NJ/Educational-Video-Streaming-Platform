@@ -6,6 +6,8 @@ import {
 	VideoCameraSlash,
 } from "@/lib/Icons";
 import { Button } from "./ui/button";
+import { useSetRecoilState } from "recoil";
+import { currSceneAtom } from "@/lib/atom";
 
 type Props = {
 	publishAudio: boolean;
@@ -14,14 +16,11 @@ type Props = {
 	handleCameraToggle: () => void;
 	handleMicrophoneToggle: () => void;
 	handleShareScreenToggle: () => void;
-	setCurrScene: React.Dispatch<
-		React.SetStateAction<{
-			board: boolean;
-			slides: boolean;
-			default: boolean;
-			screen: boolean;
-		}>
-	>;
+	handleLeaveRoom: () => void;
+	handleChangeScene: (
+		activeScene: "slides" | "board" | "default" | "screen",
+		slide?: number
+	) => void;
 };
 
 export const MenubarTeacher = ({
@@ -31,8 +30,11 @@ export const MenubarTeacher = ({
 	handleCameraToggle,
 	handleMicrophoneToggle,
 	handleShareScreenToggle,
-	setCurrScene,
+	handleLeaveRoom,
+	handleChangeScene,
 }: Props) => {
+	const setCurrScene = useSetRecoilState(currSceneAtom);
+
 	return (
 		<div className="flex items-center justify-center gap-5 bg-slate-200 py-3">
 			<Button
@@ -55,12 +57,7 @@ export const MenubarTeacher = ({
 				onClick={() => {
 					handleShareScreenToggle();
 
-					setCurrScene({
-						slides: false,
-						board: false,
-						default: false,
-						screen: true,
-					});
+					handleChangeScene("screen");
 				}}
 				variant={!publishScreen ? "destructive" : "outline"}
 				className="rounded-full"
@@ -71,14 +68,7 @@ export const MenubarTeacher = ({
 			<Button
 				variant={"outline"}
 				className="rounded-full"
-				onClick={() =>
-					setCurrScene({
-						slides: true,
-						board: false,
-						default: false,
-						screen: false,
-					})
-				}
+				onClick={() => handleChangeScene("slides")}
 			>
 				Slides
 			</Button>
@@ -86,14 +76,7 @@ export const MenubarTeacher = ({
 			<Button
 				variant={"outline"}
 				className="rounded-full"
-				onClick={() =>
-					setCurrScene({
-						slides: false,
-						board: true,
-						default: false,
-						screen: false,
-					})
-				}
+				onClick={() => handleChangeScene("board")}
 			>
 				White Board
 			</Button>
@@ -101,16 +84,17 @@ export const MenubarTeacher = ({
 			<Button
 				variant={"outline"}
 				className="rounded-full"
-				onClick={() =>
-					setCurrScene({
-						slides: false,
-						board: false,
-						default: true,
-						screen: false,
-					})
-				}
+				onClick={() => handleChangeScene("default")}
 			>
 				Default
+			</Button>
+
+			<Button
+				variant={"destructive"}
+				className="rounded-full"
+				onClick={handleLeaveRoom}
+			>
+				Leave Room
 			</Button>
 		</div>
 	);
