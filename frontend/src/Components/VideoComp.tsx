@@ -9,10 +9,6 @@ export const VideoComp = ({
 	teacher?: string;
 	className?: string;
 }) => {
-	console.log(
-		"max-w-full max-h-full object-contain" + (className ? ` ${className}` : "")
-	);
-
 	return (
 		<div
 			className={

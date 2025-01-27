@@ -6,15 +6,9 @@ import { currSlideAtom, slidesLinksAtom } from "@/lib/atom";
 import { ArrowLeft, ArrowRight } from "lucide-react";
 import { useMemo } from "react";
 
-export const SlidesTeacher = ({
-	handleChangeScene,
-}: {
-	handleChangeScene: (
-		activeScene: "slides" | "board" | "default" | "screen"
-	) => void;
-}) => {
+export const SlidesTeacher = () => {
 	const { handleSlidesChange, handleUploadSlides, slideImageChange } =
-		useSlidesTeacher(handleChangeScene);
+		useSlidesTeacher();
 
 	const currSlideIndex = useRecoilValue(currSlideAtom);
 	const slidesLinks = useRecoilValue(slidesLinksAtom);

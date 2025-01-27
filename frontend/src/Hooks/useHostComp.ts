@@ -18,6 +18,7 @@ const useHostComp = () => {
 
 	const wsRef = useRef<WebSocket | null>(null);
 	const wsUrl = "ws://localhost:8080/";
+	const excaliDebouceRef = useRef<NodeJS.Timeout | null>(null);
 
 	const setChatsAtom = useSetRecoilState(chatsAtom);
 	const roomId = useRecoilValue(roomIdAtom);
@@ -78,24 +79,31 @@ const useHostComp = () => {
 		setChatInput("");
 	};
 
-	const handleBoardChange = (
-		elements: readonly ExcalidrawElement[],
-		appState: AppState,
-		files: BinaryFiles
-	) => {
-		if (!wsRef.current) return;
+	const handleBoardChange = useCallback(
+		(
+			elements: readonly ExcalidrawElement[],
+			appState: AppState,
+			files: BinaryFiles
+		) => {
+			if (!wsRef.current) return;
 
-		// setExcaliStroke({ elements, appState });
+			if (excaliDebouceRef.current) clearTimeout(excaliDebouceRef.current);
 
-		if (wsRef.current?.readyState === 1)
-			wsRef.current?.send(
-				JSON.stringify({
-					type: "sendStroke",
-					stroke: { elements, appState },
-					roomId,
-				})
-			);
-	};
+			excaliDebouceRef.current = setTimeout(() => {
+				setExcaliStroke({ elements, appState });
+
+				if (wsRef.current?.readyState === 1)
+					wsRef.current?.send(
+						JSON.stringify({
+							type: "sendStroke",
+							stroke: { elements, appState },
+							roomId,
+						})
+					);
+			}, 1 * 100);
+		},
+		[excaliDebouceRef, setExcaliStroke, wsRef]
+	);
 
 	const handleChangeScene = useCallback(
 		(

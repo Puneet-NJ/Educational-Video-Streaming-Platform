@@ -1,16 +1,9 @@
+import useHostComp from "@/Hooks/useHostComp";
 import { Excalidraw } from "@excalidraw/excalidraw";
-import { ExcalidrawElement } from "@excalidraw/excalidraw/types/element/types";
-import { AppState, BinaryFiles } from "@excalidraw/excalidraw/types/types";
 
-const BoardPublish = ({
-	handleBoardChange,
-}: {
-	handleBoardChange: (
-		elements: readonly ExcalidrawElement[],
-		appState: AppState,
-		files: BinaryFiles
-	) => void;
-}) => {
+const BoardPublish = () => {
+	const { handleBoardChange } = useHostComp();
+
 	return (
 		<div className="w-full h-full">
 			<Excalidraw onChange={handleBoardChange} />

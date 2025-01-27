@@ -3,18 +3,15 @@ import axios from "axios";
 import { useState } from "react";
 import useToken from "./useToken";
 import { useMutation } from "@tanstack/react-query";
-import { useRecoilState, useSetRecoilState } from "recoil";
+import { useRecoilState } from "recoil";
 import { currSlideAtom, roomIdAtom, slidesLinksAtom } from "@/lib/atom";
 import { queryClient } from "@/lib/Providers";
+import useHostComp from "./useHostComp";
 
-const useSlidesTeacher = (
-	handleChangeScene: (
-		activeScene: "slides" | "board" | "default" | "screen",
-		slide?: number
-	) => void
-) => {
+const useSlidesTeacher = () => {
 	const [slides, setSlides] = useState<File>();
 	// const [currSlideIndex, setCurrSlideIndex] = useState(0);
+	const { handleChangeScene } = useHostComp();
 
 	const maxSlidesSize = 5 * 1000000;
 	const { getToken } = useToken();
