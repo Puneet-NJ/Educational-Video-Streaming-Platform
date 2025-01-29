@@ -24,6 +24,8 @@ const useUserComp = () => {
 	const { getToken } = useToken();
 
 	const handleParseScene = (scene: any) => {
+		console.log(scene);
+
 		if (scene === "White Board") {
 			setCurrScene({
 				board: true,
@@ -75,15 +77,12 @@ const useUserComp = () => {
 			if (type === "joined") {
 				const { scene, stroke, chats } = JSON.parse(event.data);
 
-				console.log(scene);
+				if (scene) handleParseScene(scene);
 
-				handleParseScene(scene);
-
-				console.log(stroke);
-				if (excalidrawAPI) excalidrawAPI.updateScene(stroke);
+				if (excalidrawAPI && stroke) excalidrawAPI.updateScene(stroke);
 
 				console.log(chats);
-				setChatsAtom(chats.reverse());
+				if (chats) setChatsAtom(chats.reverse());
 			} else if (type === "currScene") {
 				const { scene } = JSON.parse(event.data);
 

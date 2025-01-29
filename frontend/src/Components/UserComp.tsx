@@ -10,7 +10,8 @@ import BoardSubscribe from "./BoardSubscibe";
 import { SlidesStudent } from "./SlidesStudent";
 
 export const UserComp = () => {
-	const { videoRef, audioRef, screenRef, username } = useDummyVideo();
+	const { videoRef, audioRef, screenRef, username, handleLeaveRoom } =
+		useDummyVideo();
 	const { handleSendChat, chatInput, setChatInput } = useUserComp();
 
 	const chats = useRecoilValue(chatsAtom);
@@ -28,7 +29,7 @@ export const UserComp = () => {
 		chat = "col-span-1 row-span-8";
 	}
 
-	console.log(currScene.board);
+	console.log(currScene);
 
 	return (
 		<div className="max-h-full min-h-full grid grid-cols-4 grid-rows-10 gap-2">
@@ -77,7 +78,7 @@ export const UserComp = () => {
 						const [key, value] = Object.entries(chat)[0];
 						console.log(chat);
 
-						console.log(Object.entries(chat));
+						console.log(JSON.stringify(value));
 
 						return (
 							<div
@@ -85,7 +86,7 @@ export const UserComp = () => {
 								className="flex items-center mb-3 pb-2 space-x-3 border-"
 							>
 								<div className="w-10 h-10 flex items-center justify-center rounded-full bg-blue-500 text-white font-semibold">
-									{value.name.charAt(0).toUpperCase()}
+									{value.name?.charAt(0)?.toUpperCase()}
 								</div>
 								<div className="flex-grow">
 									<div className="text-sm font-semibold text-gray-700">
@@ -101,19 +102,15 @@ export const UserComp = () => {
 				</div>
 			</div>
 
-			{/* <div className="col-span-4 row-span-2">
-				<MenubarTeacher
-					publishAudio={publishAudio}
-					publishScreen={publishScreen}
-					publishVideo={publishVideo}
-					handleCameraToggle={handleCameraToggle}
-					handleMicrophoneToggle={handleMicrophoneToggle}
-					handleShareScreenToggle={handleShareScreenToggle}
-					handleLeaveRoom={handleLeaveRoom}
-					handleChangeScene={handleChangeScene}
-				/>
-				<div>{teacherRoomId}</div>
-			</div> */}
+			<div className="col-span-4 row-span-2 mx-auto">
+				<Button
+					variant={"destructive"}
+					className="rounded-full"
+					onClick={handleLeaveRoom}
+				>
+					Leave Room
+				</Button>
+			</div>
 		</div>
 	);
 };

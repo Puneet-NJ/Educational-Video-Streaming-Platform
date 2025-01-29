@@ -11,8 +11,6 @@ wss.on("connection", (socket) => {
 	socket.on("message", (data) => {
 		const { type, roomId } = JSON.parse(data.toString());
 
-		console.log(roomId);
-
 		if (type === "joinClass") {
 			const { token, scene, stroke } = JSON.parse(data.toString());
 
@@ -36,10 +34,6 @@ wss.on("connection", (socket) => {
 					);
 					return;
 				}
-
-				console.log("scene ", "stroke");
-
-				console.log(scene, stroke);
 
 				let modifiedStroke = null;
 				if (stroke) modifiedStroke = processStroke(stroke);
@@ -78,17 +72,22 @@ wss.on("connection", (socket) => {
 				return;
 			}
 
-			const chats: ChatMetaData[] = [];
-			CHATS.get(roomId)?.forEach((chat) => {
-				chats.push(chat);
-			});
+			const chats = CHATS.get(roomId);
+
+			const chatsArray: { [key: string]: ChatMetaData }[] = [];
+
+			if (chats) {
+				Array.from(chats).forEach(([key, chatData]) => {
+					chatsArray.push({ [key]: chatData });
+				});
+			}
 
 			socket.send(
 				JSON.stringify({
 					type: "joined",
-					scene,
-					stroke,
-					chats: chats,
+					scene: ROOMS.get(roomId)?.Room_MetaData.currScene,
+					stroke: ROOMS.get(roomId)?.Room_MetaData.currStroke,
+					chats: [...chatsArray],
 				})
 			);
 			return;
@@ -177,19 +176,13 @@ wss.on("connection", (socket) => {
 		if (type === "sendChat") {
 			const { chat } = JSON.parse(data.toString());
 
-			console.log(chat);
-
 			if (!ROOMS.get(roomId)) {
-				console.log("no room Id");
-
 				socket.send(JSON.stringify({ type: "No room with this Id exists" }));
 				return;
 			}
 
 			const socketMetaData = ROOMS.get(roomId)?.Sockets.get(socket);
 			if (!socketMetaData) {
-				console.log("not part of room");
-
 				socket.send(JSON.stringify({ type: "You are not part of the room" }));
 				return;
 			}

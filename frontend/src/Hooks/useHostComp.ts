@@ -47,6 +47,8 @@ const useHostComp = () => {
 
 			if (!roomId) return;
 
+			console.log(sceneType);
+
 			wsRef.current?.send(
 				JSON.stringify({
 					type: "joinClass",
