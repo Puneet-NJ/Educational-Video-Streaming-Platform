@@ -12,14 +12,14 @@ export const VideoComp = ({
 	return (
 		<div
 			className={
-				"relative w-full h-full flex items-center justify-center" +
+				"bg-yellow-500 relative w-full h-full flex items-center justify-center" +
 				(className ? ` ${className}` : "")
 			}
 		>
-			<div className="w-full h-full flex items-center justify-center overflow-hidden">
+			<div className="w-full h-full flex items-center justify-center overflow-hidden bg-gray-400">
 				<video
 					ref={videoRef}
-					className="max-w-full max-h-full object-contain"
+					className="min-w-full max-w-full min-h-full max-h-full object-contain"
 					autoPlay
 					muted
 					playsInline

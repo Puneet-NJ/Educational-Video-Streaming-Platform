@@ -1,5 +1,6 @@
 import { atom } from "recoil";
 import { queryClient } from "./Providers";
+import { ExcalidrawImperativeAPI } from "@excalidraw/excalidraw/types/types";
 
 export const userAtom = atom({
 	key: "userAtom",
@@ -66,4 +67,9 @@ export const currSceneAtom = atom<{
 		screen: false,
 		default: true,
 	},
+});
+
+export const excalidrawAtom = atom<ExcalidrawImperativeAPI>({
+	key: "excalidrawAtom",
+	default: undefined,
 });

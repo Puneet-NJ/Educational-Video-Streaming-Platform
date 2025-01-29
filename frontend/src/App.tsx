@@ -6,6 +6,7 @@ import Check from "./Pages/Check";
 import Space from "./Pages/Space";
 import Layout from "./Layout";
 import Host from "./Pages/Host";
+import User from "./Pages/User";
 
 function App() {
 	return (
@@ -20,7 +21,7 @@ function App() {
 
 						<Route path="/host" element={<Host />} />
 						{/* <Route path="/watch" element={<Host />} /> */}
-						<Route path="/watch/:roomId" element={<Space />} />
+						<Route path="/watch/:roomId" element={<User />} />
 					</Routes>
 				</Layout>
 			</BrowserRouter>

@@ -45,9 +45,12 @@ const useHostComp = () => {
 				sceneType = "Teacher";
 			}
 
+			if (!roomId) return;
+
 			wsRef.current?.send(
 				JSON.stringify({
 					type: "joinClass",
+					roomId: roomId,
 					token: token.getToken(),
 					stroke: excalidStroke,
 					scene: sceneType,
@@ -65,7 +68,7 @@ const useHostComp = () => {
 				setChatsAtom(chats.reverse());
 			}
 		};
-	}, []);
+	}, [roomId]);
 
 	const handleSendChat = (e: React.FormEvent<HTMLFormElement>) => {
 		e.preventDefault();
@@ -73,8 +76,13 @@ const useHostComp = () => {
 		if (chatInput === "") return;
 
 		console.log(chatInput + " " + wsRef.current?.OPEN);
+		console.log("roomId ", roomId);
 
-		wsRef.current?.send(JSON.stringify({ type: "sendChat", chat: chatInput }));
+		if (!roomId) return;
+
+		wsRef.current?.send(
+			JSON.stringify({ type: "sendChat", chat: chatInput, roomId })
+		);
 
 		setChatInput("");
 	};
@@ -138,7 +146,7 @@ const useHostComp = () => {
 				scene = "Teacher";
 			}
 
-			console.log(wsRef.current?.readyState);
+			console.log(roomId);
 
 			if (wsRef.current?.readyState === 1) {
 				wsRef.current.send(

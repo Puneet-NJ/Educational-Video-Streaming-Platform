@@ -10,7 +10,6 @@ import useHostComp from "./useHostComp";
 
 const useSlidesTeacher = () => {
 	const [slides, setSlides] = useState<File>();
-	// const [currSlideIndex, setCurrSlideIndex] = useState(0);
 	const { handleChangeScene } = useHostComp();
 
 	const maxSlidesSize = 5 * 1000000;
