@@ -11,8 +11,20 @@ import { Button } from "./ui/button";
 import { SendButton } from "@/lib/Icons";
 
 export const HostComp = () => {
-	const { videoRef, audioRef, screenRef, username, publishScreen } =
-		useDummyVideo();
+	const {
+		videoRef,
+		audioRef,
+		screenRef,
+		username,
+		publishScreen,
+		teacherRoomId,
+		publishAudio,
+		publishVideo,
+		handleCameraToggle,
+		handleMicrophoneToggle,
+		handleShareScreenToggle,
+		handleLeaveRoom,
+	} = useDummyVideo();
 
 	const { chatInput, setChatInput, handleSendChat, handleChangeScene } =
 		useHostComp();
@@ -102,7 +114,17 @@ export const HostComp = () => {
 
 			<div className="col-span-4 row-span-2">
 				<div className="shadow-lg">
-					<MenubarTeacher />
+					<MenubarTeacher
+						publishAudio={publishAudio}
+						publishScreen={publishScreen}
+						publishVideo={publishVideo}
+						handleCameraToggle={handleCameraToggle}
+						handleMicrophoneToggle={handleMicrophoneToggle}
+						handleShareScreenToggle={handleShareScreenToggle}
+						handleLeaveRoom={handleLeaveRoom}
+						handleChangeScene={handleChangeScene}
+						teacherRoomId={teacherRoomId}
+					/>
 				</div>
 			</div>
 		</div>

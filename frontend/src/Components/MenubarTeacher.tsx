@@ -6,23 +6,35 @@ import {
 	VideoCameraSlash,
 } from "@/lib/Icons";
 import { Button } from "./ui/button";
-import useVideo from "@/Hooks/useDummyVideo";
-import useHostComp from "@/Hooks/useHostComp";
+import { Popover, PopoverContent, PopoverTrigger } from "./ui/popover";
+import { Clipboard } from "flowbite-react";
 
-export const MenubarTeacher = () => {
-	const {
-		teacherRoomId,
-		publishAudio,
-		publishScreen,
-		publishVideo,
-		handleCameraToggle,
-		handleMicrophoneToggle,
-		handleShareScreenToggle,
-		handleLeaveRoom,
-	} = useVideo();
+type Props = {
+	publishAudio: boolean;
+	publishVideo: boolean;
+	publishScreen: boolean;
+	handleCameraToggle: () => void;
+	handleMicrophoneToggle: () => void;
+	handleShareScreenToggle: () => void;
+	handleLeaveRoom: () => void;
+	handleChangeScene: (
+		activeScene: "slides" | "board" | "default" | "screen",
+		slide?: number
+	) => void;
+	teacherRoomId: string;
+};
 
-	const { handleChangeScene } = useHostComp();
-
+export const MenubarTeacher = ({
+	publishAudio,
+	publishVideo,
+	publishScreen,
+	handleCameraToggle,
+	handleMicrophoneToggle,
+	handleShareScreenToggle,
+	handleLeaveRoom,
+	handleChangeScene,
+	teacherRoomId,
+}: Props) => {
 	return (
 		<div className="flex items-center justify-center gap-5 bg-slate-300 py-3">
 			<Button
@@ -85,7 +97,7 @@ export const MenubarTeacher = () => {
 				Leave Room
 			</Button>
 
-			{/* <Popover>
+			<Popover>
 				<PopoverTrigger className="rounded-full">
 					<Button variant={"default"} className="rounded-full">
 						Room ID
@@ -109,9 +121,7 @@ export const MenubarTeacher = () => {
 						</div>
 					</div>
 				</PopoverContent>
-			</Popover> */}
-
-			{teacherRoomId}
+			</Popover>
 		</div>
 	);
 };
