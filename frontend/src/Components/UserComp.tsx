@@ -1,7 +1,7 @@
 import useUserComp from "@/Hooks/useUserComp";
 import useDummyVideo from "../Hooks/useDummyVideo";
 import { useRecoilValue } from "recoil";
-import { chatsAtom, currSceneAtom } from "@/lib/atom";
+import { chatsAtom, currSceneAtom, teacherNameAtom } from "@/lib/atom";
 import { VideoComp } from "./VideoComp";
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
@@ -10,15 +10,12 @@ import BoardSubscribe from "./BoardSubscibe";
 import { SlidesStudent } from "./SlidesStudent";
 
 export const UserComp = () => {
-	const { videoRef, audioRef, screenRef, username, handleLeaveRoom } =
-		useDummyVideo();
+	const { videoRef, audioRef, screenRef, handleLeaveRoom } = useDummyVideo();
 	const { handleSendChat, chatInput, setChatInput } = useUserComp();
 
 	const chats = useRecoilValue(chatsAtom);
-
+	const teacherName = useRecoilValue(teacherNameAtom);
 	const currScene = useRecoilValue(currSceneAtom);
-
-	console.log(currScene);
 
 	let main = "col-span-3 row-span-8";
 	let sec = "col-span-1 row-span-2";
@@ -28,8 +25,6 @@ export const UserComp = () => {
 		sec = "col-span-3 row-span-8";
 		chat = "col-span-1 row-span-8";
 	}
-
-	console.log(currScene);
 
 	return (
 		<div className="max-h-full min-h-full grid grid-cols-4 grid-rows-10 gap-2">
@@ -44,7 +39,7 @@ export const UserComp = () => {
 			</div>
 
 			<div className={`${sec} bg-gray-500 border-blue border`}>
-				<VideoComp videoRef={videoRef} teacher={username || "anonymous"} />
+				<VideoComp videoRef={videoRef} teacher={teacherName || "anonymous"} />
 
 				<div className="">
 					<audio ref={audioRef} muted={true} autoPlay />
@@ -76,9 +71,6 @@ export const UserComp = () => {
 				<div className="p-4 overflow-y-auto flex flex-col-reverse">
 					{chats?.map((chat) => {
 						const [key, value] = Object.entries(chat)[0];
-						console.log(chat);
-
-						console.log(JSON.stringify(value));
 
 						return (
 							<div

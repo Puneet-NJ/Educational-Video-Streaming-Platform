@@ -16,7 +16,7 @@ import {
 } from "livekit-client";
 import { jwtDecode } from "jwt-decode";
 import { useRecoilValue, useSetRecoilState } from "recoil";
-import { roomIdAtom, userInRoomIdAtom } from "@/lib/atom";
+import { chatsAtom, roomIdAtom, userInRoomIdAtom } from "@/lib/atom";
 import { useMutation } from "@tanstack/react-query";
 import axios from "axios";
 import { BACKEND_URL } from "@/lib/lib";
@@ -48,6 +48,7 @@ const useVideo = () => {
 	const [publishAudio, setPublishAudio] = useState(true);
 	const [publishScreen, setPublishScreen] = useState(false);
 	const [teacherRoomId, setTeacherRoomId] = useState("");
+	const [reconnecting, setIsReconnecting] = useState(false);
 
 	const { getToken } = useToken();
 	const setUserInRoomId = useSetRecoilState(userInRoomIdAtom);
@@ -56,6 +57,7 @@ const useVideo = () => {
 
 	const setRoomId = useSetRecoilState(roomIdAtom);
 	const roomIdRecoil = useRecoilValue(roomIdAtom);
+	const setChats = useSetRecoilState(chatsAtom);
 
 	const [searchParams, setSearchParams] = useSearchParams();
 	const { getRoomToken, clearRoomToken } = useRoomToken();
@@ -102,12 +104,9 @@ const useVideo = () => {
 	useEffect(() => {
 		const initializeRoom = async () => {
 			try {
-				if (!roomToken) {
-					return;
-				}
+				if (!roomToken) return;
 
 				const decodedToken = jwtDecode<Jwt>(roomToken);
-
 				username.current = decodedToken.sub;
 				const { canPublish, roomAdmin, room: tokenRoomId } = decodedToken.video;
 
@@ -122,7 +121,6 @@ const useVideo = () => {
 
 				if (!isTeacher && tokenRoomId !== roomId) {
 					clearRoomToken();
-
 					return;
 				}
 
@@ -134,11 +132,29 @@ const useVideo = () => {
 					},
 				});
 
+				// Separate connection state handling for teacher and student
+				currentRoomRef.current.on(RoomEvent.ConnectionStateChanged, (state) => {
+					console.log("Connection state ", state);
+
+					if (state === "reconnecting") {
+						setIsReconnecting(true);
+					} else if (state === "connected") {
+						setIsReconnecting(false);
+
+						// Only attempt to republish tracks if we're the teacher
+						if (roomAdmin && canPublish && !reconnecting) {
+							handleRepublishTracks();
+						}
+					}
+				});
+
+				// Track subscription handling remains the same for both roles
 				currentRoomRef.current.on(
 					RoomEvent.TrackSubscribed,
 					handleTrackSubscribed
 				);
 
+				// Only initialize tracks for teacher
 				if (roomAdmin) {
 					await handleAdminShowTracks();
 				}
@@ -146,43 +162,9 @@ const useVideo = () => {
 				await currentRoomRef.current.prepareConnection(serverUrl, roomToken);
 				await currentRoomRef.current.connect(serverUrl, roomToken);
 
-				// publish video & audio if teacher
-				if (roomAdmin && canPublish) {
-					try {
-						if (!(videoRef.current?.srcObject instanceof MediaStream)) {
-							return;
-						}
-
-						const videoTracks = videoRef.current.srcObject.getVideoTracks();
-
-						const publishVideo =
-							await currentRoomRef.current.localParticipant.publishTrack(
-								videoTracks[0],
-								{
-									name: "videoTrack",
-									simulcast: true,
-									source: Track.Source.Camera,
-								}
-							);
-
-						if (!(audioRef.current?.srcObject instanceof MediaStream)) {
-							return;
-						}
-
-						const audioTracks = audioRef.current.srcObject.getTracks();
-
-						const publishAudio =
-							await currentRoomRef.current.localParticipant.publishTrack(
-								audioTracks[0],
-								{
-									name: "audioTrack",
-									simulcast: true,
-									source: Track.Source.Microphone,
-								}
-							);
-					} catch (err) {
-						console.log(err);
-					}
+				// Initial track publishing only for teacher when not reconnecting
+				if (roomAdmin && canPublish && !reconnecting) {
+					await handleInitialTrackPublish();
 				}
 			} catch (error) {
 				console.error("Room initialization error:", error);
@@ -198,17 +180,162 @@ const useVideo = () => {
 		if (roomId) handleJoinRoom();
 
 		return () => {
-			console.log("video comp unmounted");
-
-			if (currentRoomRef.current) {
-				currentRoomRef.current.disconnect();
-			}
-
-			if (videoRef.current) {
-				videoRef.current.srcObject = null;
-			}
+			handleCleanup();
 		};
 	}, [roomToken, roomId, serverUrl, isTeacher]);
+
+	const handleInitialTrackPublish = async () => {
+		try {
+			if (reconnecting) return;
+
+			if (videoRef.current?.srcObject instanceof MediaStream) {
+				const videoTracks = videoRef.current.srcObject.getVideoTracks();
+				if (videoTracks.length > 0) {
+					await currentRoomRef.current?.localParticipant.publishTrack(
+						videoTracks[0],
+						{
+							name: "videoTrack",
+							simulcast: true,
+							source: Track.Source.Camera,
+						}
+					);
+				}
+			}
+
+			if (audioRef.current?.srcObject instanceof MediaStream) {
+				const audioTracks = audioRef.current.srcObject.getTracks();
+				if (audioTracks.length > 0) {
+					await currentRoomRef.current?.localParticipant.publishTrack(
+						audioTracks[0],
+						{
+							name: "audioTrack",
+							simulcast: true,
+							source: Track.Source.Microphone,
+						}
+					);
+				}
+			}
+		} catch (err) {
+			console.log("Initial track publish error:", err);
+		}
+	};
+
+	const handleRepublishTracks = async () => {
+		try {
+			// Add a small delay to ensure connection is stable
+			await new Promise((resolve) => setTimeout(resolve, 1000));
+			await handleInitialTrackPublish();
+		} catch (err) {
+			console.log("Track republish error:", err);
+		}
+	};
+
+	const handleCleanup = () => {
+		console.log("Cleaning up video component");
+
+		if (currentRoomRef.current) {
+			const localParticipant = currentRoomRef.current.localParticipant;
+
+			if (localParticipant) {
+				localParticipant.getTrackPublications().forEach((publication) => {
+					if (publication.track) {
+						publication.track.detach();
+						localParticipant.unpublishTrack(publication.track.mediaStreamTrack);
+					}
+				});
+			}
+
+			currentRoomRef.current.disconnect();
+		}
+
+		[videoRef, audioRef, screenRef].forEach((ref) => {
+			if (ref.current?.srcObject instanceof MediaStream) {
+				const tracks = ref.current.srcObject.getTracks();
+				tracks.forEach((track) => track.stop());
+				ref.current.srcObject = null;
+			}
+		});
+	};
+
+	const handlePublishTracks = async () => {
+		try {
+			if (reconnecting) {
+				console.log("Livekit is reconnecting...");
+				return;
+			}
+
+			if (
+				!(videoRef.current?.srcObject instanceof MediaStream) ||
+				!(audioRef.current?.srcObject instanceof MediaStream)
+			) {
+				return;
+			}
+
+			const videoTracks = videoRef.current.srcObject.getVideoTracks();
+			const audioTracks = audioRef.current.srcObject.getTracks();
+
+			if (videoTracks.length > 0 && publishVideo) {
+				await currentRoomRef.current?.localParticipant.publishTrack(
+					videoTracks[0],
+					{
+						name: "videoTrack",
+						simulcast: true,
+						source: Track.Source.Camera,
+					}
+				);
+			}
+
+			if (audioTracks.length > 0 && publishAudio) {
+				await currentRoomRef.current?.localParticipant.publishTrack(
+					audioTracks[0],
+					{
+						name: "audioTrack",
+						simulcast: true,
+						source: Track.Source.Microphone,
+					}
+				);
+			}
+		} catch (err) {
+			console.log("Error publishing tracks:", err);
+		}
+	};
+
+	// const handleRepublishTracks = async () => {
+	// 	try {
+	// 		// Wait a short delay to ensure connection is stable
+	// 		await new Promise((resolve) => setTimeout(resolve, 1000));
+	// 		await handlePublishTracks();
+	// 	} catch (err) {
+	// 		console.log("Error republishing tracks:", err);
+	// 	}
+	// };
+
+	const handleAdminShowTracks = async () => {
+		try {
+			const tracks = await createLocalTracks({
+				audio: true,
+				video: true,
+			});
+
+			const audioTrack = tracks.find((track) => track.kind === "audio");
+			if (audioTrack && audioRef.current) {
+				audioRef.current.srcObject = new MediaStream([
+					audioTrack.mediaStreamTrack,
+				]);
+			}
+
+			const videoTrack = tracks.find((track) => track.kind === "video");
+			if (videoTrack && videoRef.current) {
+				const videoElement = videoTrack.attach();
+				videoRef.current.srcObject = videoElement.srcObject;
+			}
+
+			// Only publish tracks after they're properly set up
+			await handlePublishTracks();
+		} catch (error) {
+			console.error("Error creating local tracks:", error);
+		}
+	};
 
 	const handleCameraToggle = async () => {
 		try {
@@ -307,31 +434,6 @@ const useVideo = () => {
 		}
 	};
 
-	const handleAdminShowTracks = async () => {
-		try {
-			const tracks = await createLocalTracks({
-				audio: true,
-				video: true,
-			});
-
-			const audioTrack = tracks.find((track) => track.kind === "audio");
-			if (audioTrack && audioRef.current) {
-				audioRef.current.srcObject = new MediaStream([
-					audioTrack.mediaStreamTrack,
-				]);
-			}
-
-			const videoTrack = tracks.find((track) => track.kind === "video");
-			if (videoTrack && videoRef.current) {
-				const videoElement = videoTrack.attach();
-				videoRef.current.srcObject = videoElement.srcObject;
-				// await videoRef.current.play();
-			}
-		} catch (error) {
-			console.error("Error creating local tracks:", error);
-		}
-	};
-
 	const handleJoinRoom = () => {
 		joinRoomMutation.mutate();
 	};
@@ -375,6 +477,8 @@ const useVideo = () => {
 
 			// Trigger room leave mutation
 			leaveRoomMutation.mutate();
+
+			setChats([]);
 		} catch (error) {
 			console.error("Error leaving room:", error);
 		}

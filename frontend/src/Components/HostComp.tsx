@@ -11,20 +11,8 @@ import { Button } from "./ui/button";
 import { SendButton } from "@/lib/Icons";
 
 export const HostComp = () => {
-	const {
-		videoRef,
-		audioRef,
-		screenRef,
-		teacherRoomId,
-		publishScreen,
-		publishAudio,
-		publishVideo,
-		handleCameraToggle,
-		handleMicrophoneToggle,
-		handleShareScreenToggle,
-		handleLeaveRoom,
-		username,
-	} = useDummyVideo();
+	const { videoRef, audioRef, screenRef, username, publishScreen } =
+		useDummyVideo();
 
 	const { chatInput, setChatInput, handleSendChat, handleChangeScene } =
 		useHostComp();
@@ -43,7 +31,7 @@ export const HostComp = () => {
 
 	return (
 		<div className="max-h-full min-h-full grid grid-cols-4 grid-rows-10 gap-2">
-			<div className={`${main} border`}>
+			<div className={`${main} border shadow-xl`}>
 				<VideoComp
 					videoRef={screenRef}
 					className={publishScreen ? "" : "hidden"}
@@ -53,7 +41,7 @@ export const HostComp = () => {
 				{currScene.slides && <SlidesTeacher />}
 			</div>
 
-			<div className={`${sec} bg-yellow-200 border-blue border`}>
+			<div className={`${sec} bg-yellow-200 border-blue border shadow-lg`}>
 				<VideoComp videoRef={videoRef} teacher={username || "anonymous"} />
 
 				<div className="">
@@ -113,17 +101,9 @@ export const HostComp = () => {
 			</div>
 
 			<div className="col-span-4 row-span-2">
-				<MenubarTeacher
-					publishAudio={publishAudio}
-					publishScreen={publishScreen}
-					publishVideo={publishVideo}
-					handleCameraToggle={handleCameraToggle}
-					handleMicrophoneToggle={handleMicrophoneToggle}
-					handleShareScreenToggle={handleShareScreenToggle}
-					handleLeaveRoom={handleLeaveRoom}
-					handleChangeScene={handleChangeScene}
-				/>
-				<div>{teacherRoomId}</div>
+				<div className="shadow-lg">
+					<MenubarTeacher />
+				</div>
 			</div>
 		</div>
 	);

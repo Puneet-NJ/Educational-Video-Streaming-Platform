@@ -47,8 +47,6 @@ const useHostComp = () => {
 
 			if (!roomId) return;
 
-			console.log(sceneType);
-
 			wsRef.current?.send(
 				JSON.stringify({
 					type: "joinClass",
@@ -62,7 +60,6 @@ const useHostComp = () => {
 
 		wsRef.current.onmessage = (event) => {
 			const data = JSON.parse(event.data);
-			console.log(data);
 
 			if (data.type === "recieve-chat") {
 				const { chats } = data;
@@ -76,9 +73,6 @@ const useHostComp = () => {
 		e.preventDefault();
 
 		if (chatInput === "") return;
-
-		console.log(chatInput + " " + wsRef.current?.OPEN);
-		console.log("roomId ", roomId);
 
 		if (!roomId) return;
 
@@ -120,8 +114,6 @@ const useHostComp = () => {
 			activeScene: "slides" | "board" | "default" | "screen",
 			slide?: number
 		) => {
-			console.log(slide);
-
 			setCurrScene({
 				slides: activeScene === "slides",
 				board: activeScene === "board",
@@ -147,8 +139,6 @@ const useHostComp = () => {
 			} else {
 				scene = "Teacher";
 			}
-
-			console.log(roomId);
 
 			if (wsRef.current?.readyState === 1) {
 				wsRef.current.send(

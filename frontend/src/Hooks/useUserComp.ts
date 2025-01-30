@@ -24,8 +24,6 @@ const useUserComp = () => {
 	const { getToken } = useToken();
 
 	const handleParseScene = (scene: any) => {
-		console.log(scene);
-
 		if (scene === "White Board") {
 			setCurrScene({
 				board: true,
@@ -61,7 +59,6 @@ const useUserComp = () => {
 
 	useEffect(() => {
 		wsRef.current = new WebSocket(wsUrl);
-		console.log(roomId);
 
 		wsRef.current.onopen = (event) => {
 			if (!roomId) return;
@@ -81,7 +78,6 @@ const useUserComp = () => {
 
 				if (excalidrawAPI && stroke) excalidrawAPI.updateScene(stroke);
 
-				console.log(chats);
 				if (chats) setChatsAtom(chats.reverse());
 			} else if (type === "currScene") {
 				const { scene } = JSON.parse(event.data);
@@ -107,9 +103,6 @@ const useUserComp = () => {
 		e.preventDefault();
 
 		if (chatInput === "") return;
-
-		console.log(chatInput + " " + wsRef.current?.OPEN);
-		console.log("roomId ", roomId);
 
 		if (!roomId) return;
 

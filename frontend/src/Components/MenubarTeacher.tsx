@@ -6,37 +6,25 @@ import {
 	VideoCameraSlash,
 } from "@/lib/Icons";
 import { Button } from "./ui/button";
-import { useSetRecoilState } from "recoil";
-import { currSceneAtom } from "@/lib/atom";
+import useVideo from "@/Hooks/useDummyVideo";
+import useHostComp from "@/Hooks/useHostComp";
 
-type Props = {
-	publishAudio: boolean;
-	publishVideo: boolean;
-	publishScreen: boolean;
-	handleCameraToggle: () => void;
-	handleMicrophoneToggle: () => void;
-	handleShareScreenToggle: () => void;
-	handleLeaveRoom: () => void;
-	handleChangeScene: (
-		activeScene: "slides" | "board" | "default" | "screen",
-		slide?: number
-	) => void;
-};
+export const MenubarTeacher = () => {
+	const {
+		teacherRoomId,
+		publishAudio,
+		publishScreen,
+		publishVideo,
+		handleCameraToggle,
+		handleMicrophoneToggle,
+		handleShareScreenToggle,
+		handleLeaveRoom,
+	} = useVideo();
 
-export const MenubarTeacher = ({
-	publishAudio,
-	publishVideo,
-	publishScreen,
-	handleCameraToggle,
-	handleMicrophoneToggle,
-	handleShareScreenToggle,
-	handleLeaveRoom,
-	handleChangeScene,
-}: Props) => {
-	const setCurrScene = useSetRecoilState(currSceneAtom);
+	const { handleChangeScene } = useHostComp();
 
 	return (
-		<div className="flex items-center justify-center gap-5 bg-slate-200 py-3">
+		<div className="flex items-center justify-center gap-5 bg-slate-300 py-3">
 			<Button
 				onClick={handleCameraToggle}
 				variant={!publishVideo ? "destructive" : "outline"}
@@ -96,6 +84,34 @@ export const MenubarTeacher = ({
 			>
 				Leave Room
 			</Button>
+
+			{/* <Popover>
+				<PopoverTrigger className="rounded-full">
+					<Button variant={"default"} className="rounded-full">
+						Room ID
+					</Button>
+				</PopoverTrigger>
+				<PopoverContent>
+					<div className="w-full">
+						<div className="flex gap-2 items-center">
+							<input
+								id="roomId"
+								type="text"
+								className="block w-full rounded-lg border border-gray-300 bg-gray-50 p-2.5 pr-10 text-xs text-gray-500 focus:border-blue-500 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-400 dark:placeholder:text-gray-400 dark:focus:border-blue-500 dark:focus:ring-blue-500"
+								value={teacherRoomId}
+								disabled
+								readOnly
+							/>
+
+							<div className="relative right-10">
+								<Clipboard.WithIcon valueToCopy={teacherRoomId} />
+							</div>
+						</div>
+					</div>
+				</PopoverContent>
+			</Popover> */}
+
+			{teacherRoomId}
 		</div>
 	);
 };

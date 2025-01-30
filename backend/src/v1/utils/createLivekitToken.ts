@@ -8,35 +8,39 @@ export const createLivekitToken = async (
 	username: string,
 	roomId: string
 ) => {
-	let canPublish: boolean;
-	let roomAdmin: boolean;
+	try {
+		let canPublish: boolean;
+		let roomAdmin: boolean;
 
-	canPublish = false;
-	roomAdmin = false;
-	if (role === "Admin" || role === "Teacher") {
-		if (userId === teacherId) {
-			canPublish = true;
-			roomAdmin = true;
+		canPublish = false;
+		roomAdmin = false;
+		if (role === "Admin" || role === "Teacher") {
+			if (userId === teacherId) {
+				canPublish = true;
+				roomAdmin = true;
+			}
 		}
+
+		// create a token
+		const participant = new AccessToken(
+			process.env.LIVEKIT_API_KEY,
+			process.env.LIVEKIT_API_SECRET,
+			{
+				identity: username,
+				ttl: "1m",
+			}
+		);
+		participant.addGrant({
+			roomAdmin: roomAdmin,
+			canPublish: canPublish,
+			roomJoin: true,
+			room: roomId,
+		});
+
+		const token = await participant.toJwt();
+
+		return token;
+	} catch (err) {
+		console.log(err);
 	}
-
-	// create a token
-	const participant = new AccessToken(
-		process.env.LIVEKIT_API_KEY,
-		process.env.LIVEKIT_API_SECRET,
-		{
-			identity: username,
-			ttl: "1m",
-		}
-	);
-	participant.addGrant({
-		roomAdmin: roomAdmin,
-		canPublish: canPublish,
-		roomJoin: true,
-		room: roomId,
-	});
-
-	const token = await participant.toJwt();
-
-	return token;
 };

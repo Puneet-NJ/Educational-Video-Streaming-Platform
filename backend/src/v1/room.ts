@@ -148,6 +148,8 @@ roomRouter.post(
 				roomName: roomInfo.name,
 			});
 		} catch (err) {
+			console.log(err);
+
 			res.status(500).json({ msg: "Internal server error" });
 		}
 	}
@@ -176,6 +178,8 @@ roomRouter.post(
 
 			res.json({ msg: "User joined the room", id: joinUser.id });
 		} catch (err) {
+			console.log(err);
+
 			res.status(500).json({ msg: "Internal server error" });
 		}
 	}
@@ -196,6 +200,8 @@ roomRouter.post(
 
 			res.json({ msg: "User left the room" });
 		} catch (err) {
+			console.log(err);
+
 			res.status(500).json({ msg: "Internal server error" });
 		}
 	}

@@ -31,7 +31,7 @@ const useCheckCard = () => {
 					videoTrack.mediaStreamTrack,
 				]);
 			} catch (err) {
-				tracksRef.current!.srcObject = null;
+				if (tracksRef.current) tracksRef.current.srcObject = null;
 
 				console.log(err);
 			}
