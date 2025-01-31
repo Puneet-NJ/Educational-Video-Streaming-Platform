@@ -86,9 +86,6 @@ export const HostComp = () => {
 				<div className="p-4 overflow-y-auto flex flex-col-reverse">
 					{chats?.map((chat) => {
 						const [key, value] = Object.entries(chat)[0];
-						console.log(chat);
-
-						console.log(Object.entries(chat));
 
 						return (
 							<div

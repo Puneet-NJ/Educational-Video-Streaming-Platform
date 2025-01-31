@@ -28,7 +28,7 @@ export const UserComp = () => {
 
 	return (
 		<div className="max-h-full min-h-full grid grid-cols-4 grid-rows-10 gap-2">
-			<div className={`${main} border`}>
+			<div className={`${main} border shadow-xl`}>
 				<VideoComp
 					videoRef={screenRef}
 					className={currScene.screen ? "" : "hidden"}
@@ -38,7 +38,7 @@ export const UserComp = () => {
 				{currScene.slides && <SlidesStudent />}
 			</div>
 
-			<div className={`${sec} bg-gray-500 border-blue border`}>
+			<div className={`${sec} bg-gray-500 border-blue border shadow-xl`}>
 				<VideoComp videoRef={videoRef} teacher={teacherName || "anonymous"} />
 
 				<div className="">
@@ -94,10 +94,10 @@ export const UserComp = () => {
 				</div>
 			</div>
 
-			<div className="col-span-4 row-span-2 mx-auto">
+			<div className="col-span-4 row-span-2 mx-auto mt-3">
 				<Button
 					variant={"destructive"}
-					className="rounded-full"
+					className="rounded-full shadow-xl"
 					onClick={handleLeaveRoom}
 				>
 					Leave Room

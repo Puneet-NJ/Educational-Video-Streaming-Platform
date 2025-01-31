@@ -134,8 +134,6 @@ const useVideo = () => {
 
 				// Separate connection state handling for teacher and student
 				currentRoomRef.current.on(RoomEvent.ConnectionStateChanged, (state) => {
-					console.log("Connection state ", state);
-
 					if (state === "reconnecting") {
 						setIsReconnecting(true);
 					} else if (state === "connected") {
@@ -231,8 +229,6 @@ const useVideo = () => {
 	};
 
 	const handleCleanup = () => {
-		console.log("Cleaning up video component");
-
 		if (currentRoomRef.current) {
 			const localParticipant = currentRoomRef.current.localParticipant;
 
