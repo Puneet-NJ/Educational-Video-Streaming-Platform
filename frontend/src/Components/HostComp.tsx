@@ -26,8 +26,13 @@ export const HostComp = () => {
 		handleLeaveRoom,
 	} = useDummyVideo();
 
-	const { chatInput, setChatInput, handleSendChat, handleChangeScene } =
-		useHostComp();
+	const {
+		chatInput,
+		setChatInput,
+		handleSendChat,
+		handleChangeScene,
+		handleBoardChange,
+	} = useHostComp();
 
 	const chats = useRecoilValue(chatsAtom);
 	const currScene = useRecoilValue(currSceneAtom);
@@ -41,6 +46,8 @@ export const HostComp = () => {
 		chat = "col-span-1 row-span-8";
 	}
 
+	console.log(currScene.board);
+
 	return (
 		<div className="max-h-full min-h-full grid grid-cols-4 grid-rows-10 gap-2">
 			<div className={`${main} border shadow-xl`}>
@@ -49,7 +56,10 @@ export const HostComp = () => {
 					className={publishScreen ? "" : "hidden"}
 				/>
 
-				{currScene.board && <BoardPublish />}
+				<BoardPublish
+					handleBoardChange={handleBoardChange}
+					className={currScene.board ? "" : " hidden"}
+				/>
 				{currScene.slides && <SlidesTeacher />}
 			</div>
 

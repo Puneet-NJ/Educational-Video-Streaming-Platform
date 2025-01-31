@@ -106,7 +106,7 @@ const useHostComp = () => {
 					);
 			}, 1 * 100);
 		},
-		[excaliDebouceRef, setExcaliStroke, wsRef]
+		[excaliDebouceRef, setExcaliStroke, wsRef, roomId]
 	);
 
 	const handleChangeScene = useCallback(

@@ -63,9 +63,14 @@ const useUserComp = () => {
 		wsRef.current.onopen = (event) => {
 			if (!roomId) return;
 
-			wsRef.current?.send(
-				JSON.stringify({ type: "joinClass", token: getToken(), roomId: roomId })
-			);
+			if (wsRef.current?.readyState === 1)
+				wsRef.current?.send(
+					JSON.stringify({
+						type: "joinClass",
+						token: getToken(),
+						roomId: roomId,
+					})
+				);
 		};
 
 		wsRef.current.onmessage = (event) => {
