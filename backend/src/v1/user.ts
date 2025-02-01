@@ -1,7 +1,8 @@
 import express from "express";
 import { userSigninSchema, userSignupSchema } from "./types/zod.js";
 import { client } from "./utils/lib.js";
-import { compare, hash } from "bcrypt";
+import bcrypt from "bcryptjs";
+const { compare, hash } = bcrypt;
 import jwt from "jsonwebtoken";
 import auth from "./middleware/auth.js";
 

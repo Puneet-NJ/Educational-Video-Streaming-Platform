@@ -296,16 +296,6 @@ const useVideo = () => {
 		}
 	};
 
-	// const handleRepublishTracks = async () => {
-	// 	try {
-	// 		// Wait a short delay to ensure connection is stable
-	// 		await new Promise((resolve) => setTimeout(resolve, 1000));
-	// 		await handlePublishTracks();
-	// 	} catch (err) {
-	// 		console.log("Error republishing tracks:", err);
-	// 	}
-	// };
-
 	const handleAdminShowTracks = async () => {
 		try {
 			const tracks = await createLocalTracks({
