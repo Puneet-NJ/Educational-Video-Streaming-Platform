@@ -1,5 +1,5 @@
 import useUserComp from "@/Hooks/useUserComp";
-import useDummyVideo from "../Hooks/useDummyVideo";
+import useDummyVideo from "../Hooks/useVideo";
 import { useRecoilValue } from "recoil";
 import { chatsAtom, currSceneAtom, teacherNameAtom } from "@/lib/atom";
 import { VideoComp } from "./VideoComp";

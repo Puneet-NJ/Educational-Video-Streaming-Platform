@@ -60,7 +60,7 @@ const useUserComp = () => {
 	useEffect(() => {
 		wsRef.current = new WebSocket(wsUrl);
 
-		wsRef.current.onopen = (event) => {
+		wsRef.current.onopen = () => {
 			if (!roomId) return;
 
 			if (wsRef.current?.readyState === 1)

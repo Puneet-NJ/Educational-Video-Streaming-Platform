@@ -3,8 +3,6 @@ import useCreateToken from "@/Hooks/useCreateToken";
 import { useEffect, useRef, useState } from "react";
 import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 import {
-	LocalParticipant,
-	LocalTrackPublication,
 	RemoteParticipant,
 	RemoteTrack,
 	RemoteTrackPublication,
@@ -392,6 +390,8 @@ const useVideo = () => {
 		publication: RemoteTrackPublication,
 		participant: RemoteParticipant
 	) => {
+		console.log(publication, participant);
+
 		if (track.source === "screen_share") {
 			screenRef.current!.srcObject = null;
 
@@ -470,6 +470,7 @@ const useVideo = () => {
 		}
 	};
 
+	console.log(setSearchParams);
 	return {
 		videoRef,
 		audioRef,

@@ -1,7 +1,7 @@
 import BoardPublish from "@/Components/BoardPublish";
 import { SlidesTeacher } from "@/Components/SlidesTeacher";
 import { VideoComp } from "./VideoComp";
-import useDummyVideo from "../Hooks/useDummyVideo";
+import useDummyVideo from "../Hooks/useVideo";
 import { MenubarTeacher } from "./MenubarTeacher";
 import useHostComp from "@/Hooks/useHostComp";
 import { useRecoilValue } from "recoil";

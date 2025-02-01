@@ -30,7 +30,7 @@ const useHostComp = () => {
 	useEffect(() => {
 		wsRef.current = new WebSocket(wsUrl);
 
-		wsRef.current.onopen = (ev) => {
+		wsRef.current.onopen = () => {
 			let sceneType: SceneType;
 
 			if (currScene.board) {
@@ -89,6 +89,8 @@ const useHostComp = () => {
 			appState: AppState,
 			files: BinaryFiles
 		) => {
+			console.log(files);
+
 			if (!wsRef.current) return;
 
 			if (excaliDebouceRef.current) clearTimeout(excaliDebouceRef.current);

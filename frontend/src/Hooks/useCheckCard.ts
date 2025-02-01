@@ -12,6 +12,8 @@ const useCheckCard = () => {
 	const [queryParams, setQueryParams] = useSearchParams();
 	const roomToken = queryParams.get("at");
 
+	console.log(mic, setQueryParams);
+
 	useEffect(() => {
 		clearTracks();
 
