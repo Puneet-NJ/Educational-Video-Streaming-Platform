@@ -1,5 +1,34 @@
 FROM node:18-bullseye
 
+# Install build dependencies
+RUN apt-get update && \
+    apt-get install -y \
+    build-essential \
+    pkg-config \
+    libz-dev \
+    libpng-dev \
+    libjpeg-dev \
+    libtiff-dev \
+    libwebp-dev \
+    libopenjp2-7-dev \
+    libghc-hdbc-postgresql-dev \
+    libgs-dev \
+    ghostscript \
+    wget \
+    && rm -rf /var/lib/apt/lists/*
+
+# Download and install ImageMagick from source
+RUN cd /tmp && \
+    wget https://imagemagick.org/archive/ImageMagick.tar.gz && \
+    tar xvzf ImageMagick.tar.gz && \
+    cd ImageMagick-* && \
+    ./configure && \
+    make -j$(nproc) && \
+    make install && \
+    ldconfig /usr/local/lib && \
+    cd .. && \
+    rm -rf ImageMagick*
+
 WORKDIR /unacademy/backend
 
 ENV DATABASE_URL=""
