@@ -1,11 +1,11 @@
 import express from "express";
-import auth from "./middleware/auth.js";
+import auth from "../middlewares/auth.js";
 import multer from "multer";
-import { client, maxPdfSize } from "./utils/lib.js";
-import { slidesValidation } from "./types/zod.js";
+import { client, maxPdfSize } from "../utils/lib.js";
+import { slidesValidation } from "../types/zod.js";
 import { exec } from "child_process";
 import fs from "fs";
-import { roomSlides, uploadToS3 } from "./utils/helper.js";
+import { roomSlides, uploadToS3 } from "../utils/helper.js";
 
 const upload = multer({
 	dest: "uploads/pdf/",

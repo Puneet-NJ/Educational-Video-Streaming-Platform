@@ -1,13 +1,13 @@
 import express from "express";
-import auth from "./middleware/auth.js";
+import auth from "../middlewares/auth.js";
 import {
 	createRoomSchema,
 	joinRoomSchema,
 	leaveRoomSchema,
-} from "./types/zod.js";
-import { client, roomService } from "./utils/lib.js";
+} from "../types/zod.js";
+import { client, roomService } from "../utils/lib.js";
 import { v4 as uuidv4 } from "uuid";
-import { createLivekitToken } from "./utils/createLivekitToken.js";
+import { createLivekitToken } from "../utils/createLivekitToken.js";
 
 const roomRouter = express.Router();
 

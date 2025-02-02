@@ -1,8 +1,8 @@
 import express from "express";
-import { userRouter } from "./user.js";
+import { userRouter } from "./routes/user.js";
 import dotenv from "dotenv";
-import { roomRouter } from "./room.js";
-import { slidesRouter } from "./slides.js";
+import { roomRouter } from "./routes/room.js";
+import { slidesRouter } from "./routes/slides.js";
 
 dotenv.config();
 
