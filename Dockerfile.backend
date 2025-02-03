@@ -2,39 +2,21 @@ FROM node:18-bullseye
 
 # Install comprehensive build dependencies
 RUN apt-get update && \
-    apt-get install -y \
-    build-essential \
-    pkg-config \
-    libz-dev \
-    libpng-dev \
-    libjpeg-dev \
-    libtiff-dev \
-    libwebp-dev \
-    libopenjp2-7-dev \
-    libgs-dev \
-    ghostscript \
-    wget \
-    autoconf \
-    libtool \
-    libltdl-dev \
-    && apt-get clean \
-    && rm -rf /var/lib/apt/lists/*
+    apt-get install -y imagemagick libmagickwand-dev && \
+    rm -rf /var/lib/apt/lists/*
 
 # Download and install ImageMagick from source with verbose configuration
 RUN cd /tmp && \
     wget https://imagemagick.org/archive/releases/ImageMagick-7.1.1-42.tar.gz && \
     tar xvzf ImageMagick-7.1.1-42.tar.gz && \
     cd ImageMagick-7.1.1-42 && \
-    ./configure \
-        --host=$(uname -m) \
-        --build=$(uname -m) \
+    MAKEFLAGS="-j1" ./configure \
         --disable-dependency-tracking \
         --with-modules \
         --disable-static \
         --enable-shared \
-        --without-perl \
-        --with-x=no && \
-    make -j$(nproc) && \
+        --without-perl && \
+    make && \
     make install && \
     ldconfig /usr/local/lib && \
     cd .. && \
