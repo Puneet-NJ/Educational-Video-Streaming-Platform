@@ -32,8 +32,6 @@ jobs:
           push: true
           tags: puneetnj/unacademy-backend:latest
           platforms: linux/amd64,linux/arm64
-          cache-from: type=registry,ref=puneetnj/unacademy-backend:latest
-          cache-to: type=inline,mode=max
 
       - name: Verify Backend Image
         run: |
