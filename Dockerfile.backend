@@ -14,19 +14,22 @@ RUN apt-get update && \
     libgs-dev \
     ghostscript \
     wget \
+    autoconf \
+    libtool \
     && apt-get clean \
-    && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
+    && rm -rf /var/lib/apt/lists/*
 
 # Download and install ImageMagick from source
 RUN cd /tmp && \
-    wget https://imagemagick.org/archive/ImageMagick.tar.gz && \
-    tar xvzf ImageMagick.tar.gz && \
-    cd ImageMagick-* && \
+    wget https://imagemagick.org/archive/releases/ImageMagick-7.1.1-20.tar.gz && \
+    tar xvzf ImageMagick-7.1.1-20.tar.gz && \
+    cd ImageMagick-7.1.1-20 && \
     ./configure \
         --disable-dependency-tracking \
         --with-modules \
         --disable-static \
-        --enable-shared && \
+        --enable-shared \
+        --without-perl && \
     make -j$(nproc) && \
     make install && \
     ldconfig /usr/local/lib && \
