@@ -32,6 +32,16 @@ jobs:
           push: true
           tags: puneetnj/unacademy-backend:latest
           platforms: linux/amd64,linux/arm64
+          cache-from: type=registry,ref=puneetnj/unacademy-backend:latest
+          cache-to: type=inline,mode=max
+          secrets: |
+            DATABASE_URL: "${{ secrets.DATABASE_URL }}"
+            LIVEKIT_URL: "${{ secrets.LIVEKIT_URL }}"
+            LIVEKIT_API_KEY: "${{ secrets.LIVEKIT_API_KEY }}"
+            LIVEKIT_API_SECRET: "${{ secrets.LIVEKIT_API_SECRET }}"
+            JWT_SECRET: "${{ secrets.JWT_SECRET }}"
+            AWS_ACCESS_KEY_ID: "${{ secrets.AWS_ACCESS_KEY_ID }}"
+            AWS_SECRET_ACCESS_KEY: "${{ secrets.AWS_SECRET_ACCESS_KEY }}"
 
       - name: Verify Backend Image
         run: |
