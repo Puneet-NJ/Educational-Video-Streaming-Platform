@@ -1,5 +1,5 @@
-import { Logo } from "./Components/Logo";
-import { ModeToggle } from "./Components/mode-toggle";
+import { Logo } from "../Logo";
+import { ModeToggle } from "../mode-toggle";
 
 const Layout = ({ children }: { children: React.ReactNode }) => {
 	return (

@@ -3,7 +3,7 @@ import Signin from "./Pages/Signin";
 import Signup from "./Pages/Signup";
 import Home from "./Pages/Home";
 import Check from "./Pages/Check";
-import Layout from "./Layout";
+import Layout from "./Components/layout/Layout";
 import Host from "./Pages/Host";
 import User from "./Pages/User";
 
