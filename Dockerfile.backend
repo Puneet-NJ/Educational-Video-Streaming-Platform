@@ -22,7 +22,11 @@ RUN cd /tmp && \
     wget https://imagemagick.org/archive/ImageMagick.tar.gz && \
     tar xvzf ImageMagick.tar.gz && \
     cd ImageMagick-* && \
-    ./configure && \
+    ./configure \
+        --disable-dependency-tracking \
+        --with-modules \
+        --disable-static \
+        --enable-shared && \
     make -j$(nproc) && \
     make install && \
     ldconfig /usr/local/lib && \
